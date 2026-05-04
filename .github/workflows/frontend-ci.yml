@@ -146,7 +146,32 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 
-  # ── 4. Promote to test environment ────────────────────────────────────────
+  # ── 4. CodeQL Security Analysis ──────────────────────────────────────────
+  codeql:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  # ── 5. Promote to test environment ────────────────────────────────────────
   promote-test:
     name: Promote → test
     needs: [docker, scan]
