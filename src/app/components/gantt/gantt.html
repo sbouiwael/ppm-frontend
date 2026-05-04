@@ -1,0 +1,91 @@
+<div class="gantt-container">
+  <!-- ═══ Toolbar ═══ -->
+  <div class="gantt-toolbar">
+    <div class="toolbar-left">
+      <a [routerLink]="['/projects', projectId]" class="btn btn-outline btn-sm">← Back</a>
+      <h2 class="toolbar-title">Gantt Chart</h2>
+    </div>
+    <div class="toolbar-center">
+      <button class="tool-btn" (click)="scrollToToday()" title="Scroll to Today">
+        <span class="tool-icon">⊙</span> Today
+      </button>
+      <button class="tool-btn" (click)="zoomToFit()" title="Zoom to Fit">
+        <span class="tool-icon">⊞</span> Fit
+      </button>
+      <div class="toolbar-sep"></div>
+      <button class="tool-btn" [class.active]="showCriticalPath" (click)="toggleCriticalPath()" title="Toggle Critical Path">
+        <span class="tool-icon cp-icon"></span> Critical Path
+      </button>
+    </div>
+    <div class="toolbar-right">
+      <div class="zoom-group">
+        <span class="zoom-label">Zoom:</span>
+        <button class="zoom-btn" [class.active]="zoom === 'day'" (click)="setZoom('day')">Day</button>
+        <button class="zoom-btn" [class.active]="zoom === 'week'" (click)="setZoom('week')">Week</button>
+        <button class="zoom-btn" [class.active]="zoom === 'month'" (click)="setZoom('month')">Month</button>
+      </div>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading Gantt chart...</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error" style="margin: 12px 16px;">{{ errorMessage }}</div>
+  }
+
+  @if (!loading && tasks.length > 0 && config) {
+    <div class="gantt-split">
+      <!-- ═══ LEFT: Grid panel ═══ -->
+      <div class="grid-panel" [style.width.px]="gridWidth">
+        <div class="grid-header-zone">
+          <gantt-grid [tasks]="[]" [selectedTaskId]="null" [headerOnly]="true"></gantt-grid>
+        </div>
+        <div class="grid-body-zone" #gridBody (scroll)="onGridScroll($event)">
+          <gantt-grid
+            [tasks]="tasks"
+            [selectedTaskId]="selectedTaskId"
+            (taskSelected)="onTaskSelected($event)"
+            (cellEdited)="onCellEdited($event)"
+            (toggleExpand)="onToggleExpand($event)"
+            (addTask)="onAddTask($event)">
+          </gantt-grid>
+        </div>
+      </div>
+
+      <!-- ═══ Splitter ═══ -->
+      <div class="splitter"
+           (pointerdown)="onSplitterPointerDown($event)"
+           (pointermove)="onSplitterPointerMove($event)"
+           (pointerup)="onSplitterPointerUp()">
+        <div class="splitter-grip"></div>
+      </div>
+
+      <!-- ═══ RIGHT: Timeline panel ═══ -->
+      <div class="timeline-panel">
+        <div class="timescale-zone" #timescaleHeader>
+          <gantt-timescale [timescale]="timescale" [config]="config"></gantt-timescale>
+        </div>
+        <div class="timeline-body-zone" #timelineBody (scroll)="onTimelineScroll($event)">
+          <gantt-timeline
+            [config]="config"
+            [bars]="bars"
+            [arrows]="arrows"
+            [selectedTaskId]="selectedTaskId"
+            (taskSelected)="onTaskSelected($event)"
+            (barDragEnd)="onBarDragEnd($event)"
+            (barResizeEnd)="onBarResizeEnd($event)">
+          </gantt-timeline>
+        </div>
+      </div>
+    </div>
+  } @else if (!loading && !errorMessage && tasks.length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>No tasks in this project</h3>
+      <p class="text-muted">Create tasks to see them on the Gantt chart.</p>
+      <a routerLink="/tasks/create" class="btn btn-primary">Create Task</a>
+    </div>
+  }
+</div>

@@ -1,0 +1,34 @@
+@if (totalPages > 1) {
+  <div class="pagination">
+    <span class="pagination-info">Page {{ currentPage }} of {{ totalPages }}</span>
+
+    <div class="pagination-buttons">
+      <button class="pagination-btn" (click)="goFirst()" [disabled]="currentPage === 1" title="First page">
+        &laquo;
+      </button>
+      <button class="pagination-btn" (click)="goPrev()" [disabled]="currentPage === 1" title="Previous page">
+        &lsaquo;
+      </button>
+
+      @for (page of pages; track $index) {
+        @if (page === -1) {
+          <span class="pagination-ellipsis">&hellip;</span>
+        } @else {
+          <button
+            class="pagination-btn"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        }
+      }
+
+      <button class="pagination-btn" (click)="goNext()" [disabled]="currentPage === totalPages" title="Next page">
+        &rsaquo;
+      </button>
+      <button class="pagination-btn" (click)="goLast()" [disabled]="currentPage === totalPages" title="Last page">
+        &raquo;
+      </button>
+    </div>
+  </div>
+}

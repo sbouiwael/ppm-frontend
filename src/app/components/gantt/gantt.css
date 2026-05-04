@@ -1,0 +1,249 @@
+.gantt-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: var(--color-bg, #f8fafb);
+  overflow: hidden;
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif);
+}
+
+/* ═══ Toolbar ═══ */
+
+.gantt-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: var(--color-surface, #fff);
+  border-bottom: 2px solid var(--color-border, #e1e8ed);
+  flex-shrink: 0;
+  z-index: 10;
+  gap: 12px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a2633);
+  margin: 0;
+}
+
+.toolbar-center {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border, #e1e8ed);
+  margin: 0 6px;
+}
+
+/* Tool buttons */
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border, #e1e8ed);
+  border-radius: 4px;
+  background: var(--color-surface, #fff);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #5a6c7d);
+  cursor: pointer;
+  transition: all 120ms;
+  white-space: nowrap;
+}
+
+.tool-btn:hover {
+  background: #f0f4f8;
+  border-color: #c8d1da;
+}
+
+.tool-btn.active {
+  background: #e8f5e9;
+  border-color: #4CAF50;
+  color: #2E7D32;
+}
+
+.tool-icon {
+  font-size: 14px;
+}
+
+.cp-icon {
+  display: inline-block;
+  width: 12px;
+  height: 3px;
+  background: #E53935;
+  border-radius: 2px;
+}
+
+/* Zoom group */
+.zoom-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--color-border, #e1e8ed);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.zoom-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #5a6c7d);
+  padding: 0 8px;
+  background: #f8f9fb;
+  line-height: 30px;
+  border-right: 1px solid var(--color-border, #e1e8ed);
+}
+
+.zoom-btn {
+  padding: 0 12px;
+  line-height: 30px;
+  border: none;
+  background: var(--color-surface, #fff);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary, #5a6c7d);
+  cursor: pointer;
+  transition: all 120ms;
+  border-right: 1px solid var(--color-border, #e1e8ed);
+}
+
+.zoom-btn:last-child {
+  border-right: none;
+}
+
+.zoom-btn:hover {
+  background: #f0f4f8;
+}
+
+.zoom-btn.active {
+  background: var(--color-primary, #024d7d);
+  color: #fff;
+}
+
+/* ═══ Split layout ═══ */
+
+.gantt-split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.grid-panel {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border, #e1e8ed);
+  background: var(--color-surface, #fff);
+}
+
+.grid-header-zone {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.grid-body-zone {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.grid-body-zone::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Splitter */
+.splitter {
+  width: 6px;
+  cursor: col-resize;
+  background: #e8ecf0;
+  flex-shrink: 0;
+  transition: background 150ms;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.splitter:hover,
+.splitter:active {
+  background: var(--color-accent, #42b7d4);
+}
+
+.splitter-grip {
+  width: 2px;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 1px;
+}
+
+.splitter:hover .splitter-grip,
+.splitter:active .splitter-grip {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Timeline panel */
+.timeline-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.timescale-zone {
+  flex-shrink: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border, #e1e8ed);
+  background: var(--color-surface, #fff);
+}
+
+.timeline-body-zone {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ═══ Empty state ═══ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  flex: 1;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.empty-state h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #1a2633);
+  margin: 0 0 8px;
+}
+
+.empty-state p {
+  margin: 0 0 20px;
+}

@@ -1,0 +1,180 @@
+# ==============================================================
+# PPM Frontend — CI/CD Pipeline (GitHub Actions)
+# Provider-agnostic: uses GHCR by default, overridable via secrets.
+#
+# REGISTRY:      container registry URL (default: ghcr.io)
+# IMAGE_NAME:    image name             (default: <owner>/ppm-frontend)
+# GITOPS_TOKEN:  PAT with write access to ppm-gitops repo
+#
+# The Angular build outputs to dist/ppm_front/browser/ (Angular 21 default).
+# The Dockerfile multi-stage handles everything — no pre-build needed in CI.
+# ==============================================================
+
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'angular.json'
+      - 'Dockerfile'
+      - 'nginx.conf.template'
+      - 'entrypoint.sh'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+
+env:
+  REGISTRY:   ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/ppm-frontend
+  NODE_VERSION: '22'
+
+jobs:
+  # ── 1. Lint & Tests ───────────────────────────────────────────────────────
+  test:
+    name: Lint & Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npx ng test --watch=false
+        # --watch=false: single pass (no watch mode), compatible with @angular/build:unit-test
+        # Exits with code 1 if any test fails → blocks the pipeline
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results
+          path: |
+            coverage/
+          retention-days: 7
+
+  # ── 2. Docker Build & Push ────────────────────────────────────────────────
+  docker:
+    name: Build & Push Docker Image
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.version }}
+      image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,prefix=sha-,format=short
+            type=raw,value=latest,enable=true
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 3. Security Scan ──────────────────────────────────────────────────────
+  scan:
+    name: Trivy Vulnerability Scan
+    needs: docker
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Trivy (fail on CRITICAL)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.docker.outputs.image-ref }}
+          format: sarif
+          output: trivy-results.sarif
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+  # ── 4. Promote to test environment ────────────────────────────────────────
+  promote-test:
+    name: Promote → test
+    needs: [docker, scan]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/ppm-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update frontend image tag for test environment
+        run: |
+          TAG="${{ needs.docker.outputs.image-tag }}"
+          FILE="gitops/charts/ppm-frontend/values-test.yaml"
+
+          sed -i "s|^  tag:.*|  tag: \"${TAG}\"|" "$FILE"
+
+          cd gitops
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add charts/ppm-frontend/values-test.yaml
+
+          if git diff --staged --quiet; then
+            echo "No image tag change — skipping commit."
+          else
+            git commit -m "ci(frontend): promote ${TAG} to test [skip ci]"
+            git push
+          fi

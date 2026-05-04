@@ -1,4 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
+import { describe, it, expect, beforeEach } from 'vitest';
+
 
 import { TaskList } from './task-list';
 
@@ -8,9 +13,13 @@ describe('TaskList', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TaskList]
-    })
-    .compileComponents();
+      imports: [TaskList],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]),
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(TaskList);
     component = fixture.componentInstance;

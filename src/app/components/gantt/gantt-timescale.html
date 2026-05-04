@@ -1,0 +1,23 @@
+@if (timescale && config) {
+  <div class="timescale" [style.width.px]="config.totalWidth">
+    <div class="timescale-row top-row">
+      @for (cell of timescale.top; track cell.x) {
+        <div class="timescale-cell"
+             [style.left.px]="cell.x"
+             [style.width.px]="cell.width">
+          {{ cell.label }}
+        </div>
+      }
+    </div>
+    <div class="timescale-row bottom-row">
+      @for (cell of timescale.bottom; track cell.x) {
+        <div class="timescale-cell"
+             [class.weekend-cell]="cell.isWeekend"
+             [style.left.px]="cell.x"
+             [style.width.px]="cell.width">
+          {{ cell.label }}
+        </div>
+      }
+    </div>
+  </div>
+}

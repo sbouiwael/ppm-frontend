@@ -1,0 +1,217 @@
+<div class="container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h1 class="page-title">My Tasks</h1>
+      <p class="page-subtitle">Tasks assigned to you across all active projects</p>
+    </div>
+    <div class="page-header-right">
+      @if (!loading) {
+        <span class="task-count-badge">{{ filteredTasks.length }} / {{ allTasks.length }} tasks</span>
+      }
+    </div>
+  </div>
+
+  <!-- Filters Bar -->
+  <div class="filters-card card">
+    <div class="filters-row">
+
+      <!-- Status filter -->
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <select [(ngModel)]="filterStatus" class="filter-select">
+          <option value="ALL">All Statuses</option>
+          <option value="NOT_STARTED">Not Started</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="BLOCKED">Blocked</option>
+          <option value="DONE">Done</option>
+        </select>
+      </div>
+
+      <!-- Project filter -->
+      <div class="filter-group">
+        <label class="filter-label">Project</label>
+        <select [(ngModel)]="filterProjectId" class="filter-select">
+          <option value="">All Projects</option>
+          @for (p of projects; track p.id) {
+            <option [value]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+
+      <!-- Overdue toggle -->
+      <div class="filter-group filter-group--toggle">
+        <label class="toggle-label">
+          <input type="checkbox" [(ngModel)]="filterOverdue" class="toggle-checkbox" />
+          <span class="toggle-text">Overdue only</span>
+        </label>
+      </div>
+
+      <!-- Due soon toggle -->
+      <div class="filter-group filter-group--toggle">
+        <label class="toggle-label">
+          <input type="checkbox" [(ngModel)]="filterDueSoon" class="toggle-checkbox" />
+          <span class="toggle-text">Due this week</span>
+        </label>
+      </div>
+
+      <!-- Reset -->
+      <button class="btn btn-outline btn-sm" (click)="resetFilters()">Reset Filters</button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  @if (loading) {
+    <div class="loading">Loading your tasks...</div>
+  }
+
+  <!-- Error -->
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  <!-- Tasks Grid -->
+  @if (!loading && filteredTasks.length > 0) {
+    <div class="tasks-grid">
+      @for (task of filteredTasks; track task.taskId) {
+        <div [class]="getTaskCardClass(task)">
+
+          <!-- Card header: task name + status badge -->
+          <div class="task-card-header">
+            <div class="task-name-row">
+              @if (task.wbsNumber) {
+                <span class="wbs-badge">{{ task.wbsNumber }}</span>
+              }
+              <h3 class="task-name">
+                <a [routerLink]="['/tasks', task.taskId]">{{ task.taskName }}</a>
+              </h3>
+            </div>
+            <div class="task-badges">
+              @if (isOverdue(task)) {
+                <span class="badge badge-error">Overdue</span>
+              } @else if (isDueSoon(task)) {
+                <span class="badge badge-warning">Due Soon</span>
+              }
+              @switch (task.taskStatus) {
+                @case ('DONE') {
+                  <span class="badge badge-success">Done</span>
+                }
+                @case ('IN_PROGRESS') {
+                  <span class="badge badge-info">In Progress</span>
+                }
+                @case ('BLOCKED') {
+                  <span class="badge badge-warning">Blocked</span>
+                }
+                @default {
+                  <span class="badge badge-primary">Not Started</span>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Project link -->
+          <div class="task-project-row">
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <a [routerLink]="['/projects', task.projectId]" class="project-link">
+              {{ task.projectName }}
+            </a>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="progress-section">
+            <div class="progress-label-row">
+              <span class="progress-text">Progress</span>
+              <span class="progress-pct">{{ task.taskProgress }}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="task.taskProgress"
+                   [class.progress-fill--done]="task.taskStatus === 'DONE'"
+                   [class.progress-fill--blocked]="task.taskStatus === 'BLOCKED'">
+              </div>
+            </div>
+          </div>
+
+          <!-- Meta info -->
+          <div class="task-meta-grid">
+            @if (task.startDate) {
+              <div class="meta-item">
+                <span class="meta-label">Start</span>
+                <span class="meta-value">{{ task.startDate | date:'mediumDate' }}</span>
+              </div>
+            }
+            @if (task.endDate) {
+              <div class="meta-item" [class.meta-item--overdue]="isOverdue(task)">
+                <span class="meta-label">Due</span>
+                <span class="meta-value">{{ task.endDate | date:'mediumDate' }}</span>
+              </div>
+            }
+            @if (task.assignedHours) {
+              <div class="meta-item">
+                <span class="meta-label">Assigned</span>
+                <span class="meta-value">{{ task.assignedHours }}h</span>
+              </div>
+            }
+            @if (task.workHours) {
+              <div class="meta-item">
+                <span class="meta-label">Planned</span>
+                <span class="meta-value">{{ task.workHours }}h</span>
+              </div>
+            }
+          </div>
+
+          <!-- Card footer: quick actions + navigation links -->
+          <div class="task-card-footer">
+            <!-- Quick status actions -->
+            @for (action of quickActions(task); track action.status) {
+              <button
+                [class]="action.css"
+                [disabled]="updatingTaskIds.has(task.taskId)"
+                (click)="applyQuickAction(task, action.status)">
+                @if (updatingTaskIds.has(task.taskId)) {
+                  <span class="btn-spinner"></span>
+                } @else {
+                  {{ action.label }}
+                }
+              </button>
+            }
+            <!-- Navigation -->
+            <a [routerLink]="['/tasks', task.taskId]" class="btn btn-outline btn-sm">
+              View Details
+            </a>
+            <a [routerLink]="['/tasks', task.taskId, 'dependencies']" class="btn-link btn-sm">
+              Dependencies
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Empty state: tasks exist but filters hide them all -->
+  @if (!loading && allTasks.length > 0 && filteredTasks.length === 0) {
+    <div class="empty-state card text-center">
+      <p class="text-muted">No tasks match your current filters.</p>
+      <button class="btn btn-outline btn-sm mt-md" (click)="resetFilters()">Clear Filters</button>
+    </div>
+  }
+
+  <!-- Empty state: no tasks assigned at all -->
+  @if (!loading && !errorMessage && allTasks.length === 0) {
+    <div class="empty-state card text-center">
+      <div class="empty-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </div>
+      <h3 class="text-primary">No tasks assigned yet</h3>
+      <p class="text-muted">
+        You have no active task assignments. Contact your Project Manager to get assigned to a task.
+      </p>
+    </div>
+  }
+</div>

@@ -1,0 +1,136 @@
+<div class="container-sm">
+  <div class="page-header">
+    <h1 class="page-title">Edit Task</h1>
+  </div>
+
+  @if (loadingData) {
+    <div class="loading">Loading task data...</div>
+  }
+
+  @if (!loadingData) {
+    <div class="card">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Project *</label>
+            <select formControlName="projectId">
+              <option [ngValue]="null">-- Select Project --</option>
+              @for (p of projects; track p.id) {
+                <option [ngValue]="p.id">{{ p.name }}</option>
+              }
+            </select>
+            @if (form.get('projectId')?.touched && form.get('projectId')?.invalid) {
+              <div class="form-error">Project is required.</div>
+            }
+          </div>
+
+          <div class="form-group">
+            <label>Parent Task (optional)</label>
+            <select formControlName="parentTaskId">
+              <option [ngValue]="null">-- No parent task --</option>
+              @for (t of parentTasks; track t.id) {
+                <option [ngValue]="t.id">{{ t.name }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Task Name *</label>
+          <input type="text" formControlName="name" placeholder="Enter task name" />
+          @if (form.get('name')?.touched && form.get('name')?.invalid) {
+            <div class="form-error">Task Name is required (min 2 chars).</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" placeholder="Describe your task..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-3">
+          <div class="form-group">
+            <label>WBS</label>
+            <input type="text" formControlName="wbsNumber" placeholder="ex: 1.1" />
+          </div>
+          <div class="form-group">
+            <label>Mode</label>
+            <select formControlName="mode">
+              <option value="TASK">Task</option>
+              <option value="MILESTONE">Milestone</option>
+              <option value="SUMMARY">Summary</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sort Order</label>
+            <input type="number" formControlName="sortOrder" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Duration (days) *</label>
+            <input type="number" step="0.1" formControlName="durationDays" />
+            @if (form.get('durationDays')?.touched && form.get('durationDays')?.invalid) {
+              <div class="form-error">Duration must be >= 0.1</div>
+            }
+          </div>
+          <div class="form-group">
+            <label>Planned Work (hours)</label>
+            <input type="number" step="0.1" formControlName="workHours" placeholder="optional" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Start Date</label>
+            <input type="date" formControlName="startDate" />
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" formControlName="endDate" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Status</label>
+            <select formControlName="status">
+              <option value="NOT_STARTED">Not Started</option>
+              <option value="IN_PROGRESS">In Progress</option>
+              <option value="DONE">Done</option>
+              <option value="BLOCKED">Blocked</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Progress (%) *</label>
+            <input type="number" formControlName="progress" placeholder="0-100" />
+            @if (form.get('progress')?.touched && form.get('progress')?.invalid) {
+              <div class="form-error">Progress must be between 0 and 100.</div>
+            }
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="active" />
+            Active Task
+          </label>
+        </div>
+
+        @if (errorMessage) {
+          <div class="alert alert-error">{{ errorMessage }}</div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : 'Save Changes' }}
+          </button>
+          <a routerLink="/tasks" class="btn btn-outline">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  }
+</div>

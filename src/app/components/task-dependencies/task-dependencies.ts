@@ -1,15 +1,26 @@
-import { Component, OnInit } from '@angular/core';
+/**
+ * Composant de gestion des dependances d'une tache.
+ * Permet de visualiser, ajouter et supprimer les dependances
+ * (predecesseurs et successeurs) d'une tache.
+ * Les types de dependance supportes sont : FS, SS, FF, SF.
+ */
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { Subject, switchMap, takeUntil, EMPTY } from 'rxjs';
 
 import { TaskDependencyService } from '../../services/task-dependency-service';
+import { AuthService } from '../../services/auth-service';
+import { TaskService } from '../../services/task-service';
 import {
   TaskDependencyDTO,
   TaskDependencyCreateRequest,
   DependencyType,
 } from '../../models/task-dependency';
+import { TaskDTO } from '../../models/task';
 
+/** Direction de la dependance : predecesseur ou successeur */
 type Direction = 'PREDECESSOR' | 'SUCCESSOR';
 
 @Component({
@@ -19,21 +30,36 @@ type Direction = 'PREDECESSOR' | 'SUCCESSOR';
   templateUrl: './task-dependencies.html',
   styleUrl: './task-dependencies.css',
 })
-export class TaskDependencies implements OnInit {
+export class TaskDependencies implements OnInit, OnDestroy {
+  /** Identifiant de la tache concernee */
   taskId!: number;
 
+  /** Liste des dependances ou cette tache est successeur */
   predecessors: TaskDependencyDTO[] = [];
+  /** Liste des dependances ou cette tache est predecesseur */
   successors: TaskDependencyDTO[] = [];
+  /** Taches du meme projet (pour le selecteur — exclut la tache courante) */
+  siblingTasks: TaskDTO[] = [];
+  /** Nom de la tache courante (pour le fallback d'affichage) */
+  currentTaskName = '';
 
+  /** Message d'erreur */
   errorMessage = '';
+  /** Subject de destruction pour unsubscribe propre */
+  private readonly destroy$ = new Subject<void>();
+  /** Indicateur de chargement */
   loading = false;
 
+  /** Formulaire reactif pour creer une nouvelle dependance */
   form: FormGroup;
 
   constructor(
     private route: ActivatedRoute,
     private fb: FormBuilder,
-    private depService: TaskDependencyService
+    private depService: TaskDependencyService,
+    private taskService: TaskService,
+    public auth: AuthService,
+    private cdr: ChangeDetectorRef
   ) {
     this.form = this.fb.group({
       otherTaskId: [null, [Validators.required, Validators.min(1)]],
@@ -52,30 +78,80 @@ export class TaskDependencies implements OnInit {
     }
 
     this.load();
+    this.loadSiblingTasks();
   }
 
+  /** Charge les taches du meme projet (pour le selecteur de dependances) */
+  loadSiblingTasks(): void {
+    this.taskService.getTaskById(this.taskId).pipe(
+      takeUntil(this.destroy$),
+      switchMap(task => {
+        if (task?.name) this.currentTaskName = task.name;
+        return task?.projectId ? this.taskService.getTasksByProject(task.projectId) : EMPTY;
+      })
+    ).subscribe({
+      next: (tasks) => {
+        const all = tasks ?? [];
+        const current = all.find(t => t.id === this.taskId);
+        if (current?.name) this.currentTaskName = current.name;
+        this.siblingTasks = all.filter(t => t.id !== this.taskId && t.active !== false);
+        this.cdr.detectChanges();
+      },
+      error: () => { this.siblingTasks = []; this.cdr.detectChanges(); },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  /** Fallback: retourne le nom d'une tache par son ID — utilise quand le DTO ne contient pas le nom */
+  getTaskName(taskId: number): string {
+    if (taskId === this.taskId && this.currentTaskName) {
+      return this.currentTaskName;
+    }
+    const task = this.siblingTasks.find(t => t.id === taskId);
+    return task ? task.name : `Task #${taskId}`;
+  }
+
+  /** Retourne le libelle complet d'un type de dependance */
+  typeLabel(type: string | undefined): string {
+    const labels: Record<string, string> = {
+      FS: 'Finish → Start',
+      SS: 'Start → Start',
+      FF: 'Finish → Finish',
+      SF: 'Start → Finish',
+    };
+    return type ? (labels[type] ?? type) : 'FS';
+  }
+
+  /** Charge les predecesseurs et successeurs de cette tache */
   load(): void {
     this.errorMessage = '';
 
     this.depService.getPredecessors(this.taskId).subscribe({
-      next: (data) => (this.predecessors = Array.isArray(data) ? data : []),
+      next: (data) => { this.predecessors = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
       error: (err) => {
         console.error(err);
         this.predecessors = [];
         this.errorMessage = 'Error loading predecessors';
+        this.cdr.detectChanges();
       },
     });
 
     this.depService.getSuccessors(this.taskId).subscribe({
-      next: (data) => (this.successors = Array.isArray(data) ? data : []),
+      next: (data) => { this.successors = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
       error: (err) => {
         console.error(err);
         this.successors = [];
         this.errorMessage = 'Error loading successors';
+        this.cdr.detectChanges();
       },
     });
   }
 
+  /** Valide et soumet le formulaire pour creer une nouvelle dependance */
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -122,10 +198,12 @@ export class TaskDependencies implements OnInit {
         this.errorMessage =
           err?.error?.message ||
           'Error creating dependency (check same project / duplicate / self-dependency)';
+        this.cdr.detectChanges();
       },
     });
   }
 
+  /** Supprime une dependance */
   remove(dep: TaskDependencyDTO): void {
     if (!dep?.id) return;
 
@@ -134,6 +212,7 @@ export class TaskDependencies implements OnInit {
       error: (err) => {
         console.error(err);
         this.errorMessage = 'Error deleting dependency';
+        this.cdr.detectChanges();
       },
     });
   }

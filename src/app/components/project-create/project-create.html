@@ -1,63 +1,138 @@
-<h2>Create Project</h2>
-
-<form [formGroup]="form" (ngSubmit)="submit()">
-
-  <div>
-    <label>Name *</label>
-    <input type="text" formControlName="name" />
-    @if (form.get('name')?.touched && form.get('name')?.invalid) {
-      <div style="color:red;">Name is required (min 2 chars).</div>
+<div class="container-sm">
+  <div class="page-header">
+    <h1 class="page-title">Create Project</h1>
+    @if (returnToUrl !== '/projects') {
+      <a [routerLink]="returnToUrl" class="btn btn-outline">&larr; Back to Portfolio</a>
     }
   </div>
 
-  <div>
-    <label>Description</label>
-    <textarea formControlName="description"></textarea>
-  </div>
+  <div class="card">
+    <form [formGroup]="form" (ngSubmit)="submit()">
 
-  <div>
-    <label>Start Date *</label>
-    <input type="date" formControlName="startDate" />
-    @if (form.get('startDate')?.touched && form.get('startDate')?.invalid) {
-      <div style="color:red;">Start date is required.</div>
-    }
-  </div>
+      <!-- BASIC INFO -->
+      <div class="form-group">
+        <label>Project Name *</label>
+        <input type="text" formControlName="name" placeholder="Enter project name" />
+        @if (form.get('name')?.touched && form.get('name')?.invalid) {
+          <div class="form-error">Name is required (minimum 2 characters).</div>
+        }
+      </div>
 
-  <div>
-    <label>End Date</label>
-    <input type="date" formControlName="endDate" />
-  </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea formControlName="description" placeholder="Describe your project..."></textarea>
+      </div>
 
-  <div>
-    <label>Project Manager *</label>
-    <select formControlName="projectManagerId">
-      <option [ngValue]="null">-- select --</option>
-      @for (u of users; track u.id) {
-        <option [ngValue]="u.id">
-          {{ u.firstName }} {{ u.lastName }} ({{ u.role }})
-        </option>
+      <!-- DATES -->
+      <div class="grid grid-cols-2">
+        <div class="form-group">
+          <label>Start Date *</label>
+          <input type="date" formControlName="startDate" />
+          @if (form.get('startDate')?.touched && form.get('startDate')?.invalid) {
+            <div class="form-error">Start date is required.</div>
+          }
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" formControlName="endDate" />
+        </div>
+      </div>
+
+      <!-- PROJECT MANAGER -->
+      <div class="form-group">
+        <label>Project Manager *</label>
+        <select formControlName="projectManagerId">
+          <option [ngValue]="null">-- Select Project Manager --</option>
+          @for (u of users; track u.id) {
+            <option [ngValue]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.role }})</option>
+          }
+        </select>
+        @if (form.get('projectManagerId')?.touched && form.get('projectManagerId')?.invalid) {
+          <div class="form-error">Project Manager is required.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="active" />
+          Active Project
+        </label>
+      </div>
+
+      <!-- OPTIONAL SECTION -->
+      <div class="divider"></div>
+      <h3 style="margin-top:16px;">Optional Information</h3>
+
+      <!-- Portfolio / Program -->
+      <div class="grid grid-cols-2">
+        <div class="form-group">
+          <label>Portfolio</label>
+          <select formControlName="portefeuilleId">
+            <option [ngValue]="null">-- No Portfolio --</option>
+            @for (pf of portefeuilles; track pf.id) {
+              <option [ngValue]="pf.id">{{ pf.nom }}</option>
+            }
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Program Name</label>
+          <input type="text" formControlName="programName" placeholder="Optional" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Sub Program Name</label>
+        <input type="text" formControlName="subProgramName" placeholder="Optional" />
+      </div>
+
+      <div class="form-group">
+        <label>Objective</label>
+        <textarea formControlName="objective" placeholder="Project objective..."></textarea>
+      </div>
+
+      <!-- Calendar -->
+      <div class="form-group">
+        <label>Work Calendar</label>
+        <select formControlName="calendarId">
+          <option [ngValue]="null">-- No Calendar (default: all days) --</option>
+          @for (cal of calendars; track cal.id) {
+            <option [ngValue]="cal.id">{{ cal.name }} ({{ cal.workHoursPerDay }}h/day)</option>
+          }
+        </select>
+      </div>
+
+      <!-- Baseline Dates -->
+      <div class="grid grid-cols-2">
+        <div class="form-group">
+          <label>Baseline Start Date</label>
+          <input type="date" formControlName="baselineStartDate" />
+        </div>
+        <div class="form-group">
+          <label>Baseline End Date</label>
+          <input type="date" formControlName="baselineEndDate" />
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="form-group">
+        <label>Progress (%)</label>
+        <input type="number" formControlName="progress" min="0" max="100" placeholder="0-100" />
+        @if (form.get('progress')?.touched && form.get('progress')?.errors?.['min'] || form.get('progress')?.errors?.['max']) {
+          <div class="form-error">Progress must be between 0 and 100.</div>
+        }
+      </div>
+
+      @if (errorMsg) {
+        <div class="alert alert-error">{{ errorMsg }}</div>
       }
-    </select>
 
-    @if (form.get('projectManagerId')?.touched && form.get('projectManagerId')?.invalid) {
-      <div style="color:red;">Project Manager is required.</div>
-    }
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Creating...' : 'Create Project' }}
+        </button>
+        <a [routerLink]="returnToUrl" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
   </div>
-
-  <div style="margin-top: 8px;">
-    <label>
-      <input type="checkbox" formControlName="active" />
-      Active
-    </label>
-  </div>
-
-  <button type="submit" [disabled]="loading">
-    {{ loading ? 'Saving...' : 'Create' }}
-  </button>
-
-  <a routerLink="/projects" style="margin-left: 12px;">Cancel</a>
-
-  @if (errorMsg) {
-    <p style="color:red; margin-top: 12px;">{{ errorMsg }}</p>
-  }
-</form>
+</div>

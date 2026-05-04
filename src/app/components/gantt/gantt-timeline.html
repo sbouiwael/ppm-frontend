@@ -1,0 +1,150 @@
+@if (config) {
+  <div class="timeline-wrapper"
+       (mousemove)="onBarMove($event)">
+    <svg class="timeline-svg"
+         [attr.width]="config.totalWidth"
+         [attr.height]="config.totalHeight"
+         (pointermove)="onPointerMove($event)"
+         (pointerup)="onPointerUp($event)">
+
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6"
+                refX="8" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#888" />
+        </marker>
+        <!-- Clip for bar labels -->
+        @for (bar of bars; track bar.taskId) {
+          <clipPath [attr.id]="'clip-' + bar.taskId">
+            <rect [attr.x]="bar.x + 2" [attr.y]="bar.y"
+                  [attr.width]="bar.width > 4 ? bar.width - 4 : 0"
+                  [attr.height]="bar.height" />
+          </clipPath>
+        }
+      </defs>
+
+      <!-- Row stripes -->
+      @for (bar of bars; track bar.taskId; let i = $index) {
+        <rect [attr.x]="0"
+              [attr.y]="i * ROW_HEIGHT"
+              [attr.width]="config.totalWidth"
+              [attr.height]="ROW_HEIGHT"
+              [attr.fill]="i % 2 === 0 ? '#ffffff' : '#fafbfc'"
+              class="row-stripe" />
+      }
+
+      <!-- Vertical gridlines -->
+      @for (gl of gridLines; track gl.x) {
+        <line [attr.x1]="gl.x" [attr.y1]="0"
+              [attr.x2]="gl.x" [attr.y2]="config.totalHeight"
+              [attr.stroke]="gl.isMajor ? '#dde2e8' : '#eff1f3'"
+              [attr.stroke-width]="gl.isMajor ? 1 : 0.5"
+              class="grid-line" />
+      }
+
+      <!-- Weekend shading -->
+      @for (w of weekendRanges; track w.x) {
+        <rect [attr.x]="w.x" [attr.y]="0"
+              [attr.width]="w.width" [attr.height]="config.totalHeight"
+              fill="#f5f6f8" opacity="0.7" class="weekend-shade" />
+      }
+
+      <!-- Today marker -->
+      <line [attr.x1]="todayX" [attr.y1]="0"
+            [attr.x2]="todayX" [attr.y2]="config.totalHeight"
+            stroke="#E53935" stroke-width="2"
+            stroke-dasharray="6 3" class="today-line" />
+
+      <!-- Dependency arrows -->
+      @for (arrow of arrows; track arrow.id) {
+        <path [attr.d]="arrow.path"
+              fill="none" stroke="#78909C" stroke-width="1.5"
+              marker-end="url(#arrowhead)"
+              class="dep-arrow" />
+      }
+
+      <!-- Baseline bars (grey ghost bars below task bars) -->
+      @for (bar of bars; track bar.taskId) {
+        @if (bar.hasBaseline && !bar.isSummary && !bar.isMilestone) {
+          <rect [attr.x]="bar.baselineX"
+                [attr.y]="bar.y + bar.height + 2"
+                [attr.width]="bar.baselineWidth"
+                height="6" rx="2"
+                fill="#B0BEC5" opacity="0.5"
+                class="baseline-bar" />
+        }
+      }
+
+      <!-- Task bars, summary bars, milestones -->
+      @for (bar of bars; track bar.taskId) {
+        <g class="bar-group"
+           [class.selected]="selectedTaskId === bar.taskId"
+           (click)="onBarClick(bar, $event)"
+           (mouseenter)="onBarEnter(bar, $event)"
+           (mouseleave)="onBarLeave()">
+
+          @if (bar.isMilestone) {
+            <!-- Milestone diamond -->
+            <path [attr.d]="getMilestonePath(bar)"
+                  [attr.fill]="getMilestoneColor(bar)"
+                  stroke="#fff" stroke-width="1"
+                  class="milestone-diamond" />
+          } @else if (bar.isSummary) {
+            <!-- Summary bracket bar (MS Project style) -->
+            <path [attr.d]="getSummaryPath(bar)"
+                  fill="none" stroke="#37474F" stroke-width="2.5"
+                  class="summary-bar" />
+          } @else {
+            <!-- Normal task bar -->
+            <rect [attr.x]="bar.x" [attr.y]="bar.y"
+                  [attr.width]="bar.width" [attr.height]="bar.height"
+                  [attr.fill]="getBarColor(bar)" rx="3"
+                  class="task-bar"
+                  (pointerdown)="onBarPointerDown(bar, $event)" />
+
+            <!-- Progress fill -->
+            @if (bar.progressWidth > 0) {
+              <rect [attr.x]="bar.x" [attr.y]="bar.y"
+                    [attr.width]="bar.progressWidth" [attr.height]="bar.height"
+                    [attr.fill]="getBarProgressColor(bar)" rx="3"
+                    class="progress-bar" pointer-events="none" />
+            }
+
+            <!-- Task label clipped inside bar -->
+            <text [attr.x]="bar.x + 6"
+                  [attr.y]="bar.y + bar.height / 2 + 4"
+                  [attr.clip-path]="'url(#clip-' + bar.taskId + ')'"
+                  class="bar-label" pointer-events="none">
+              {{ bar.name }}
+            </text>
+
+            <!-- Resize handle (right edge) -->
+            <rect [attr.x]="bar.x + bar.width - 6" [attr.y]="bar.y"
+                  width="6" [attr.height]="bar.height"
+                  fill="transparent" class="resize-handle"
+                  (pointerdown)="onResizePointerDown(bar, $event)" />
+          }
+        </g>
+      }
+    </svg>
+
+    <!-- Tooltip overlay -->
+    @if (tooltipBar) {
+      <div class="bar-tooltip"
+           [style.left.px]="tooltipX"
+           [style.top.px]="tooltipY">
+        <div class="tooltip-title">{{ tooltipBar.name }}</div>
+        <div class="tooltip-row">
+          <span>Status:</span>
+          <span class="tooltip-status" [attr.data-status]="tooltipBar.status">{{ tooltipBar.status }}</span>
+        </div>
+        <div class="tooltip-row">
+          <span>Progress:</span>
+          <span>{{ tooltipBar.width > 0 ? ((tooltipBar.progressWidth / tooltipBar.width * 100) | number:'1.0-0') : 0 }}%</span>
+        </div>
+        @if (tooltipBar.isCritical) {
+          <div class="tooltip-critical">Critical Path</div>
+        }
+      </div>
+    }
+  </div>
+}

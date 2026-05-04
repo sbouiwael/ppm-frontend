@@ -1,0 +1,141 @@
+.form-group {
+  margin-bottom: var(--space-md, 12px);
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(0,0,0,0.15);
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--color-text-primary);
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+textarea.form-input {
+  resize: vertical;
+}
+
+.edit-title-input {
+  font-size: 18px;
+  font-weight: 700;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 13px;
+}
+
+/* Project list */
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.project-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  border-left: 3px solid var(--color-accent, #42b7d4);
+  transition: background-color 0.15s;
+}
+
+.project-row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.project-row:hover {
+  background-color: rgba(66, 183, 212, 0.05);
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-primary, #1a73e8);
+  text-decoration: none;
+}
+
+.project-name:hover {
+  text-decoration: underline;
+}
+
+.project-desc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  max-width: 400px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Add project controls */
+.add-project-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.select-input {
+  flex: 1;
+  max-width: 400px;
+}
+
+/* Create project form */
+.create-project-form {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 10px;
+  background: var(--color-bg, #fafafa);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Alerts */
+.alert-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}

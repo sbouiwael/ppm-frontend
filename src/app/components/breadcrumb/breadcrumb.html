@@ -1,0 +1,22 @@
+@if (shouldShow) {
+  <nav class="breadcrumb-nav" aria-label="Breadcrumb">
+    <ol class="breadcrumb-list">
+      @for (item of items; track item.url; let last = $last) {
+        <li class="breadcrumb-item" [class.breadcrumb-item--active]="item.active">
+          @if (!item.active) {
+            <a [routerLink]="item.url" class="breadcrumb-link">{{ item.label }}</a>
+            <span class="breadcrumb-sep" aria-hidden="true">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                   viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          } @else {
+            <span class="breadcrumb-current" aria-current="page">{{ item.label }}</span>
+          }
+        </li>
+      }
+    </ol>
+  </nav>
+}

@@ -1,69 +1,119 @@
-<h2>Task Dependencies (Task #{{ taskId }})</h2>
+<div class="dependencies-container">
+  <div class="dependency-header">
+    <h2>Task Dependencies (Task #{{ taskId }})</h2>
+    <a routerLink="/tasks/{{ taskId }}" class="back-link">
+      ← Back to Task Details
+    </a>
+  </div>
 
-<div style="margin: 12px 0;">
-  <a routerLink="/tasks/{{ taskId }}">← Back to Task details</a>
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (auth.hasRole('ADMIN','PMO','PM')) {
+  <div class="dependency-form">
+    <h3>Add Dependency</h3>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="form-group">
+        <label>Other Task *</label>
+        <select formControlName="otherTaskId">
+          <option [ngValue]="null" disabled>-- Select a task --</option>
+          @for (t of siblingTasks; track t.id) {
+            <option [ngValue]="t.id">{{ t.name }} (WBS: {{ t.wbsNumber ?? '-' }})</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Direction *</label>
+        <select formControlName="direction">
+          <option value="PREDECESSOR">Other task blocks this task</option>
+          <option value="SUCCESSOR">This task blocks other task</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Type *</label>
+        <select formControlName="type">
+          <option value="FS">Finish to Start (FS)</option>
+          <option value="SS">Start to Start (SS)</option>
+          <option value="FF">Finish to Finish (FF)</option>
+          <option value="SF">Start to Finish (SF)</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Saving...' : 'Create Dependency' }}
+        </button>
+      </div>
+    </form>
+  </div>
+  }
+
+  <div class="divider"></div>
+
+  <div class="dependency-list-section">
+    <h3>Predecessors (What Blocks This Task)</h3>
+    @if (predecessors.length > 0) {
+      <ul class="dependency-list">
+        @for (d of predecessors; track d.id) {
+          <li class="dependency-item">
+            <div class="dependency-info">
+              <div class="dependency-icon">→</div>
+              <div class="dependency-text">
+                <span class="dependency-label">
+                  {{ d.predecessorTaskName || getTaskName(d.predecessorTaskId) }}
+                  →
+                  {{ d.successorTaskName || getTaskName(d.successorTaskId) }}
+                </span>
+                <span class="dependency-type" [title]="typeLabel(d.type)">
+                  {{ d.type ?? 'FS' }} — {{ typeLabel(d.type) }}
+                </span>
+              </div>
+            </div>
+            @if (auth.hasRole('ADMIN','PMO','PM')) {
+            <button class="delete-btn" (click)="remove(d)">Delete</button>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="empty-state">
+        <p>No predecessors found. This task is not blocked by any other tasks.</p>
+      </div>
+    }
+  </div>
+
+  <div class="dependency-list-section">
+    <h3>Successors (What This Task Blocks)</h3>
+    @if (successors.length > 0) {
+      <ul class="dependency-list">
+        @for (d of successors; track d.id) {
+          <li class="dependency-item">
+            <div class="dependency-info">
+              <div class="dependency-icon">→</div>
+              <div class="dependency-text">
+                <span class="dependency-label">
+                  {{ d.predecessorTaskName || getTaskName(d.predecessorTaskId) }}
+                  →
+                  {{ d.successorTaskName || getTaskName(d.successorTaskId) }}
+                </span>
+                <span class="dependency-type" [title]="typeLabel(d.type)">
+                  {{ d.type ?? 'FS' }} — {{ typeLabel(d.type) }}
+                </span>
+              </div>
+            </div>
+            @if (auth.hasRole('ADMIN','PMO','PM')) {
+            <button class="delete-btn" (click)="remove(d)">Delete</button>
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <div class="empty-state">
+        <p>No successors found. This task is not blocking any other tasks.</p>
+      </div>
+    }
+  </div>
 </div>
-
-@if (errorMessage) {
-  <p style="color: red;">{{ errorMessage }}</p>
-}
-
-<h3>Add dependency</h3>
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <div>
-    <label>Other Task ID *</label>
-    <input type="number" formControlName="otherTaskId" />
-  </div>
-
-  <div>
-    <label>Direction *</label>
-    <select formControlName="direction">
-      <option value="PREDECESSOR">Other task blocks this task</option>
-      <option value="SUCCESSOR">This task blocks other task</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Type *</label>
-    <select formControlName="type">
-      <option value="FS">FS</option>
-      <option value="SS">SS</option>
-      <option value="FF">FF</option>
-      <option value="SF">SF</option>
-    </select>
-  </div>
-
-  <button type="submit" [disabled]="loading">
-    {{ loading ? 'Saving...' : 'Create dependency' }}
-  </button>
-</form>
-
-<hr />
-
-@if (predecessors.length > 0) {
-  <h3>Predecessors (what blocks this task)</h3>
-  <ul>
-    @for (d of predecessors; track d.id) {
-      <li>
-        Task {{ d.predecessorTaskId }} → Task {{ d.successorTaskId }} ({{ d.type }})
-        <button style="margin-left: 10px;" (click)="remove(d)">Delete</button>
-      </li>
-    }
-  </ul>
-} @else {
-  <p>No predecessors.</p>
-}
-
-@if (successors.length > 0) {
-  <h3>Successors (what this task blocks)</h3>
-  <ul>
-    @for (d of successors; track d.id) {
-      <li>
-        Task {{ d.predecessorTaskId }} → Task {{ d.successorTaskId }} ({{ d.type }})
-        <button style="margin-left: 10px;" (click)="remove(d)">Delete</button>
-      </li>
-    }
-  </ul>
-} @else {
-  <p>No successors.</p>
-}

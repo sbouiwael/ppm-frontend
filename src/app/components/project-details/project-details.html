@@ -1,0 +1,231 @@
+<div class="container-sm">
+  @if (vm$ | async; as vm) {
+
+    <div class="page-header">
+      <h1 class="page-title">Project Details</h1>
+      <div class="header-actions">
+        @if (vm.project && auth.hasRole('ADMIN','PMO','PM')) {
+          <a [routerLink]="['/projects', vm.project.id, 'edit']" class="btn btn-outline btn-sm" title="Edit Project">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" style="vertical-align:middle;margin-right:4px;">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit
+          </a>
+        }
+        <a routerLink="/projects" class="btn btn-outline btn-sm">← Back to Projects</a>
+      </div>
+    </div>
+
+    @if (vm.loading) {
+      <div class="loading">Loading project details...</div>
+    }
+
+    @if (vm.errorMessage) {
+      <div class="alert alert-error">{{ vm.errorMessage }}</div>
+    }
+
+    @if (!vm.loading && vm.project) {
+      <div class="card">
+        <div class="card-header">
+          <div class="flex justify-between items-center">
+            <h2 class="card-title">{{ vm.project.name }}</h2>
+            @if (!vm.project.active) {
+              <span class="badge badge-error">Inactive</span>
+            } @else {
+              <span class="badge badge-success">Active</span>
+            }
+          </div>
+        </div>
+
+        <div class="card-body">
+          @if (vm.project.description) {
+            <p class="text-muted">{{ vm.project.description }}</p>
+          }
+
+          <div class="grid grid-cols-2">
+            <div class="detail-item">
+              <span class="detail-label">Project ID</span>
+              <span class="detail-value">{{ vm.project.id }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Project Manager</span>
+              <span class="detail-value">{{ vm.project.projectManagerName ?? '—' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Start Date</span>
+              <span class="detail-value">{{ vm.project.startDate | date:'mediumDate' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">End Date</span>
+              <span class="detail-value">
+                @if (vm.project.endDate) { {{ vm.project.endDate | date:'mediumDate' }} } @else { — }
+              </span>
+            </div>
+          </div>
+
+          <div class="divider" style="margin:16px 0;"></div>
+          <h3 class="section-title">Optional Information</h3>
+
+          <div class="grid grid-cols-2">
+            <div class="detail-item">
+              <span class="detail-label">Portfolio</span>
+              <span class="detail-value">{{ vm.project.portfolioName ?? '—' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Program</span>
+              <span class="detail-value">{{ vm.project.programName ?? '—' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Sub Program</span>
+              <span class="detail-value">{{ vm.project.subProgramName ?? '—' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Calendar</span>
+              <span class="detail-value">{{ vm.project.calendarName ?? '—' }}</span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Baseline Start</span>
+              <span class="detail-value">
+                @if (vm.project.baselineStartDate) { {{ vm.project.baselineStartDate | date:'mediumDate' }} } @else { — }
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Baseline End</span>
+              <span class="detail-value">
+                @if (vm.project.baselineEndDate) { {{ vm.project.baselineEndDate | date:'mediumDate' }} } @else { — }
+              </span>
+            </div>
+
+            <div class="detail-item">
+              <span class="detail-label">Progress</span>
+              <span class="detail-value">
+                @if (vm.project.progress != null) { {{ vm.project.progress }}% } @else { — }
+              </span>
+            </div>
+          </div>
+
+          @if (vm.project.objective) {
+            <div class="divider" style="margin:16px 0;"></div>
+            <h3 class="section-title">Objective</h3>
+            <p class="text-muted">{{ vm.project.objective }}</p>
+          }
+        </div>
+
+        <div class="card-body file-section">
+          <div class="divider" style="margin:16px 0;"></div>
+          <h3 class="section-title">Project Documents</h3>
+
+          <div class="file-controls">
+            <div class="file-folder-tabs">
+              @for (sub of subdirectories; track sub) {
+                <button
+                  class="folder-tab"
+                  [class.folder-tab-active]="selectedSubdirectory === sub"
+                  (click)="selectedSubdirectory = sub; onSubdirectoryChange()">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  {{ sub }}
+                </button>
+              }
+            </div>
+            <button class="btn btn-primary btn-sm" (click)="fileInput.click()">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14" style="vertical-align:middle;margin-right:4px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Upload File
+            </button>
+            <input #fileInput type="file" hidden (change)="onFileSelected($event)" />
+          </div>
+
+          @if (uploadMessage) {
+            <div class="alert alert-success">{{ uploadMessage }}</div>
+          }
+          @if (uploadError) {
+            <div class="alert alert-error">{{ uploadError }}</div>
+          }
+
+          <div class="file-list-header">
+            <span class="file-list-label">Files in <strong>{{ selectedSubdirectory }}</strong></span>
+            <span class="file-count-badge">{{ files.length }} file(s)</span>
+          </div>
+
+          @if (files.length) {
+            <ul class="file-list">
+              @for (f of files; track f) {
+                <li class="file-item">
+                  <svg class="file-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                  <span class="file-name">{{ f }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="text-muted empty-folder">No files in this folder. Use "Upload File" to add documents.</p>
+          }
+        </div>
+
+      </div>
+
+      <div class="management-section">
+        <h3 class="section-title">Project Management</h3>
+        <div class="grid grid-cols-2">
+          <a [routerLink]="['/tasks']" [queryParams]="{projectId: vm.project.id}" class="management-card">
+            <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+            <div>
+              <h4>Tasks</h4>
+              <p>View and manage project tasks</p>
+            </div>
+          </a>
+
+          <a [routerLink]="['/projects', vm.project.id, 'gantt']" class="management-card">
+            <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <div>
+              <h4>Gantt Chart</h4>
+              <p>Visual project timeline</p>
+            </div>
+          </a>
+
+          <a [routerLink]="['/projects', vm.project.id, 'edit']" class="management-card">
+            <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            <div>
+              <h4>Edit Project</h4>
+              <p>Modify project details</p>
+            </div>
+          </a>
+
+          <a routerLink="/tasks/create" [queryParams]="{projectId: vm.project.id}" class="management-card">
+            <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <div>
+              <h4>New Task</h4>
+              <p>Create a task in this project</p>
+            </div>
+          </a>
+        </div>
+      </div>
+
+    } @else if (!vm.loading && !vm.errorMessage) {
+      <div class="card text-center">
+        <p class="text-muted">Project not found.</p>
+        <a routerLink="/projects" class="btn btn-primary mt-md">Back to Projects</a>
+      </div>
+    }
+  }
+</div>

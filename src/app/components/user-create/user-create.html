@@ -1,74 +1,83 @@
-<h2>Create User</h2>
-
-<form [formGroup]="form" (ngSubmit)="submit()">
-  <div>
-    <label>First Name *</label>
-    <input type="text" formControlName="firstName" />
-    @if (form.get('firstName')?.touched && form.get('firstName')?.invalid) {
-      <div style="color: red;">First Name is required (min 2 chars).</div>
-    }
+<div class="container-sm">
+  <div class="page-header">
+    <h1 class="page-title">Create User</h1>
   </div>
 
-  <div>
-    <label>Last Name *</label>
-    <input type="text" formControlName="lastName" />
-    @if (form.get('lastName')?.touched && form.get('lastName')?.invalid) {
-      <div style="color: red;">Last Name is required (min 2 chars).</div>
-    }
-  </div>
+  <div class="card">
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <div class="grid grid-cols-2">
+        <div class="form-group">
+          <label>First Name *</label>
+          <input type="text" formControlName="firstName" placeholder="Enter first name" />
+          @if (form.get('firstName')?.touched && form.get('firstName')?.invalid) {
+            <div class="form-error">First Name is required (minimum 2 characters).</div>
+          }
+        </div>
 
-  <div>
-    <label>Email *</label>
-    <input type="email" formControlName="email" />
-    @if (form.get('email')?.touched && form.get('email')?.invalid) {
-      <div style="color: red;">A valid email is required.</div>
-    }
-  </div>
+        <div class="form-group">
+          <label>Last Name *</label>
+          <input type="text" formControlName="lastName" placeholder="Enter last name" />
+          @if (form.get('lastName')?.touched && form.get('lastName')?.invalid) {
+            <div class="form-error">Last Name is required (minimum 2 characters).</div>
+          }
+        </div>
+      </div>
 
-  <div>
-    <label>Role *</label>
-    <select formControlName="role">
-      @for (r of roles; track r) {
-        <option [value]="r">{{ r }}</option>
+      <div class="form-group">
+        <label>Email *</label>
+        <input type="email" formControlName="email" placeholder="user@example.com" />
+        @if (form.get('email')?.touched && form.get('email')?.invalid) {
+          <div class="form-error">A valid email is required.</div>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Password *</label>
+        <input type="password" formControlName="password" placeholder="Enter password" />
+        @if (form.get('password')?.touched && form.get('password')?.invalid) {
+          <div class="form-error">Password is required.</div>
+        }
+      </div>
+
+      <div class="grid grid-cols-2">
+        <div class="form-group">
+          <label>Role *</label>
+          <select formControlName="role">
+            @for (r of roles; track r) {
+              <option [value]="r">{{ r }}</option>
+            }
+          </select>
+          @if (form.get('role')?.touched && form.get('role')?.invalid) {
+            <div class="form-error">Role is required.</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Weekly Capacity (hours) *</label>
+          <input type="number" formControlName="weeklyCapacity" placeholder="40" />
+          @if (form.get('weeklyCapacity')?.touched && form.get('weeklyCapacity')?.invalid) {
+            <div class="form-error">Weekly capacity must be 0 or greater.</div>
+          }
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" formControlName="active" />
+          Active User
+        </label>
+      </div>
+
+      @if (errorMessage) {
+        <div class="alert alert-error">{{ errorMessage }}</div>
       }
-    </select>
-    @if (form.get('role')?.touched && form.get('role')?.invalid) {
-      <div style="color: red;">Role is required.</div>
-    }
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="loading">
+          {{ loading ? 'Creating...' : 'Create User' }}
+        </button>
+        <a routerLink="/users" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
   </div>
-
-  <div>
-    <label>Weekly Capacity (hours) *</label>
-    <input type="number" formControlName="weeklyCapacity" />
-    @if (form.get('weeklyCapacity')?.touched && form.get('weeklyCapacity')?.invalid) {
-      <div style="color: red;">Weekly capacity must be >= 0.</div>
-    }
-  </div>
-
-  <div>
-    <label>Password *</label>
-    <input type="password" formControlName="password" />
-    @if (form.get('password')?.touched && form.get('password')?.invalid) {
-      <div style="color: red;">Password is required.</div>
-    }
-  </div>
-
-  <div style="margin-top: 8px;">
-    <label>
-      <input type="checkbox" formControlName="active" />
-      Active
-    </label>
-  </div>
-
-  <div style="margin-top: 12px;">
-    <button type="submit" [disabled]="loading">
-      {{ loading ? 'Saving...' : 'Create' }}
-    </button>
-
-    <a routerLink="/users" style="margin-left: 12px;">Cancel</a>
-  </div>
-
-  @if (errorMessage) {
-    <p style="color: red; margin-top: 12px;">{{ errorMessage }}</p>
-  }
-</form>
+</div>

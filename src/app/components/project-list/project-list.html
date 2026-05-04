@@ -1,60 +1,166 @@
-<div style="margin: 16px 0;">
-  <a routerLink="/projects/new">+ New Project</a>
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Projects</h1>
+    <div class="header-actions" [hidden]="!canWrite">
+      <button class="btn btn-secondary" (click)="fileInput.click()" [disabled]="importing">
+        Import Excel
+      </button>
+      <input #fileInput type="file" accept=".xlsx,.xls" hidden (change)="onFileSelected($event)">
+      <a routerLink="/projects/new" class="btn btn-primary">
+        <span>+</span> New Project
+      </a>
+    </div>
+  </div>
+
+  @if (importing) {
+    <div class="alert alert-info">Importing projects from Excel...</div>
+  }
+  @if (importSuccess) {
+    <div class="alert alert-success">{{ importSuccess }}</div>
+  }
+  @if (importError) {
+    <div class="alert alert-error import-error">{{ importError }}</div>
+  }
+
+  <!-- Search & Sort Bar -->
+  <div class="search-sort-bar">
+    <div class="search-box">
+      <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1" placeholder="Search projects..." class="search-input" />
+    </div>
+    <div class="sort-box">
+      <label class="sort-label">Sort by:</label>
+      <select [(ngModel)]="sortBy" (ngModelChange)="currentPage = 1" class="sort-select">
+        <option value="name-asc">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="startDate-asc">Start Date (oldest)</option>
+        <option value="startDate-desc">Start Date (newest)</option>
+        <option value="progress-desc">Progress (highest)</option>
+        <option value="progress-asc">Progress (lowest)</option>
+        <option value="active-first">Active first</option>
+        <option value="inactive-first">Inactive first</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading projects...</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (!loading && filteredProjects.length > 0) {
+    <p class="result-count">{{ filteredProjects.length }} project(s) found</p>
+    <div class="grid">
+      @for (project of paginatedProjects; track project.id) {
+        <div class="card" (dblclick)="onCardDblClick(project)">
+          <div class="card-header">
+            <div class="flex justify-between items-center">
+              <h3 class="card-title">
+                <a [routerLink]="['/projects', project.id]">{{ project.name }}</a>
+              </h3>
+              <div class="card-actions">
+                @if (project.active === false) {
+                  <span class="badge badge-error">Inactive</span>
+                } @else {
+                  <span class="badge badge-success">Active</span>
+                }
+                @if (canWrite) {
+                  <button
+                    class="action-btn"
+                    [class.action-btn-success]="project.active === false"
+                    [class.action-btn-warning]="project.active !== false"
+                    [title]="project.active === false ? 'Activate' : 'Deactivate'"
+                    (click)="toggleActive(project, $event)">
+                    @if (project.active === false) {
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Activate
+                    } @else {
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                      Deactivate
+                    }
+                  </button>
+                }
+                <button class="action-btn action-btn-edit" title="Edit" (click)="onEdit(project, $event)" [hidden]="!canWrite">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+                <button class="action-btn action-btn-danger" title="Delete" (click)="askDelete(project, $event)" [hidden]="!canWrite">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            @if (project.description) {
+              <p class="text-muted">{{ project.description }}</p>
+            }
+            <div class="project-meta">
+              <div class="meta-item">
+                <span class="meta-label">Start Date:</span>
+                <span class="meta-value">{{ project.startDate || '—' }}</span>
+              </div>
+              @if (project.endDate) {
+                <div class="meta-item">
+                  <span class="meta-label">End Date:</span>
+                  <span class="meta-value">{{ project.endDate }}</span>
+                </div>
+              }
+              <div class="meta-item">
+                <span class="meta-label">Manager:</span>
+                <span class="meta-value">{{ project.projectManagerName ?? '—' }}</span>
+              </div>
+              @if (project.progress != null) {
+                <div class="meta-item">
+                  <span class="meta-label">Progress:</span>
+                  <span class="meta-value">{{ project.progress }}%</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <a [routerLink]="['/projects', project.id]" class="btn btn-outline btn-sm">View Details</a>
+          </div>
+        </div>
+      }
+    </div>
+    <app-pagination
+      [totalItems]="totalFiltered"
+      [pageSize]="pageSize"
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)"
+    />
+  } @else if (!loading && projects.length > 0 && filteredProjects.length === 0) {
+    <div class="card text-center">
+      <p class="text-muted">No projects match your search "{{ searchTerm }}".</p>
+    </div>
+  } @else if (!loading && !errorMessage && projects.length === 0) {
+    <div class="card text-center">
+      <p class="text-muted">No projects available. Create your first project to get started!</p>
+      <a routerLink="/projects/new" class="btn btn-primary mt-md">Create Project</a>
+    </div>
+  }
 </div>
 
-@if (loading) {
-  <p>Loading...</p>
-}
-
-@if (errorMessage) {
-  <p style="color: red;">{{ errorMessage }}</p>
-}
-
-@if (!loading && projects.length > 0) {
-  <h2>List of Projects</h2>
-
-  <ul>
-    @for (project of projects; track project.id) {
-      <li>
-        <b>{{ project.name }}</b>
-
-        @if (project.active === false) {
-          <span style="color: red; margin-left: 8px;">(inactive)</span>
-        }
-
-        @if (project.description) {
-          <div>{{ project.description }}</div>
-        }
-
-        <div style="font-size: 12px; margin-top: 4px;">
-          @if (project.startDate) {
-            <span><b>Start:</b> {{ project.startDate }}</span>
-          }
-          @if (project.endDate) {
-            <span style="margin-left: 10px;">
-              <b>End:</b> {{ project.endDate }}
-            </span>
-          }
-        </div>
-
-        <div style="font-size: 12px; margin-top: 4px;">
-          <b>Project Manager ID:</b>
-          {{ project.projectManagerId ?? '—' }}
-        </div>
-
-        <div style="margin-top: 8px;">
-          <button
-            (click)="deactivate(project.id)"
-            [disabled]="project.active === false"
-          >
-            Deactivate
-          </button>
-        </div>
-
-        <hr />
-      </li>
-    }
-  </ul>
-} @else if (!loading && !errorMessage) {
-  <p>No projects available.</p>
-}
+<app-confirm-dialog
+  [visible]="showDeleteConfirm"
+  title="Delete Project"
+  [message]="'Are you sure you want to delete \'' + (deleteTarget?.name ?? '') + '\'? This action cannot be undone.'"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+/>

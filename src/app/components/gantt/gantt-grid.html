@@ -1,0 +1,155 @@
+<div class="grid-wrapper">
+  <table class="gantt-table">
+    <thead>
+      <tr>
+        <th class="col-row">#</th>
+        <th class="col-name">Task Name</th>
+        <th class="col-duration">Duration</th>
+        <th class="col-start">Start</th>
+        <th class="col-end">Finish</th>
+        <th class="col-preds">Predecessors</th>
+        <th class="col-status">Status</th>
+        <th class="col-progress">% Done</th>
+      </tr>
+    </thead>
+    @if (!headerOnly) {
+      <tbody>
+        @for (task of tasks; track task.id; let i = $index) {
+          <tr class="grid-row"
+              [class.selected]="selectedTaskId === task.id"
+              [class.summary-row]="task.isSummary"
+              [class.milestone-row]="task.isMilestone"
+              [class.critical-row]="task.isCritical"
+              [style.height.px]="ROW_HEIGHT"
+              (click)="selectTask(task.id)">
+
+            <!-- Row number -->
+            <td class="col-row">{{ i + 1 }}</td>
+
+            <!-- Task Name with indent & expand/collapse -->
+            <td class="col-name" (dblclick)="!task.isSummary && startEdit(task.id!, 'name', task.name)">
+              <div class="name-cell" [style.padding-left.px]="getIndent(task)">
+                @if (task.isSummary) {
+                  <button class="expand-btn" (click)="onToggleExpand($event, task.id)">
+                    @if (task.isExpanded) {
+                      <span class="arrow-down"></span>
+                    } @else {
+                      <span class="arrow-right"></span>
+                    }
+                  </button>
+                } @else {
+                  <span class="expand-spacer"></span>
+                }
+                @if (isEditing(task.id, 'name')) {
+                  <input #editInput class="cell-input name-input"
+                         [(ngModel)]="editValue"
+                         (blur)="saveEdit()"
+                         (keydown)="onKeyDown($event)" />
+                } @else {
+                  <span class="cell-text" [class.summary-text]="task.isSummary" [title]="task.name">{{ task.name }}</span>
+                }
+              </div>
+            </td>
+
+            <!-- Duration -->
+            <td class="col-duration" (dblclick)="!task.isSummary && startEdit(task.id!, 'durationDays', task.durationDays)">
+              @if (task.isSummary) {
+                <span class="readonly-val">{{ task.durationDays ?? '' }}</span>
+              } @else if (isEditing(task.id, 'durationDays')) {
+                <input #editInput class="cell-input"
+                       type="number" min="0" step="0.5"
+                       [(ngModel)]="editValue"
+                       (blur)="saveEdit()"
+                       (keydown)="onKeyDown($event)" />
+              } @else {
+                @if (task.isMilestone) {
+                  0 days
+                } @else {
+                  {{ task.durationDays ?? 1 }} days
+                }
+              }
+            </td>
+
+            <!-- Start Date (editable) -->
+            <td class="col-start" (dblclick)="!task.isSummary && startEdit(task.id!, 'startDate', task.startDate)">
+              @if (task.isSummary) {
+                {{ formatDate(task.summaryStart) }}
+              } @else if (isEditing(task.id, 'startDate')) {
+                <input #editInput class="cell-input"
+                       type="date"
+                       [(ngModel)]="editValue"
+                       (blur)="saveEdit()"
+                       (keydown)="onKeyDown($event)" />
+              } @else {
+                {{ formatDate(task.startDate) }}
+              }
+            </td>
+
+            <!-- End Date (editable) -->
+            <td class="col-end" (dblclick)="!task.isSummary && startEdit(task.id!, 'endDate', task.endDate)">
+              @if (task.isSummary) {
+                {{ formatDate(task.summaryEnd) }}
+              } @else if (isEditing(task.id, 'endDate')) {
+                <input #editInput class="cell-input"
+                       type="date"
+                       [(ngModel)]="editValue"
+                       (blur)="saveEdit()"
+                       (keydown)="onKeyDown($event)" />
+              } @else {
+                {{ formatDate(task.endDate) }}
+              }
+            </td>
+
+            <!-- Predecessors -->
+            <td class="col-preds">
+              {{ task.predecessorsLabel }}
+            </td>
+
+            <!-- Status (dropdown) -->
+            <td class="col-status" (dblclick)="!task.isSummary && startEdit(task.id!, 'status', task.status)">
+              @if (task.isSummary) {
+                <span class="status-badge" [attr.data-status]="task.status">{{ statusLabel(task.status) }}</span>
+              } @else if (isEditing(task.id, 'status')) {
+                <select #editInput class="cell-select"
+                        [(ngModel)]="editValue"
+                        (change)="saveEdit()"
+                        (blur)="saveEdit()">
+                  <option value="NOT_STARTED">Not Started</option>
+                  <option value="IN_PROGRESS">In Progress</option>
+                  <option value="DONE">Done</option>
+                  <option value="BLOCKED">Blocked</option>
+                </select>
+              } @else {
+                <span class="status-badge" [attr.data-status]="task.status">{{ statusLabel(task.status) }}</span>
+              }
+            </td>
+
+            <!-- Progress (editable) -->
+            <td class="col-progress" (dblclick)="!task.isSummary && startEdit(task.id!, 'progress', task.progress)">
+              @if (isEditing(task.id, 'progress')) {
+                <input #editInput class="cell-input"
+                       type="number" min="0" max="100"
+                       [(ngModel)]="editValue"
+                       (blur)="saveEdit()"
+                       (keydown)="onKeyDown($event)" />
+              } @else {
+                {{ task.progress ?? 0 }}%
+              }
+            </td>
+          </tr>
+        }
+
+        <!-- Add new task row -->
+        <tr class="grid-row add-task-row" [style.height.px]="ROW_HEIGHT">
+          <td class="col-row"></td>
+          <td class="col-name" colspan="7">
+            <input class="cell-input new-task-input"
+                   placeholder="Type a new task name and press Enter..."
+                   [(ngModel)]="newTaskName"
+                   (keydown)="onNewTaskKeyDown($event)" />
+          </td>
+        </tr>
+      </tbody>
+    }
+  </table>
+</div>

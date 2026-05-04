@@ -1,0 +1,308 @@
+<!-- Loading -->
+@if (loading) {
+  <div class="loading-full">
+    <div class="spinner"></div>
+    <span>Loading portfolio dashboard…</span>
+  </div>
+}
+
+<!-- Error -->
+@if (errorMessage) {
+  <div class="container">
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  </div>
+}
+
+<!-- Dashboard Content -->
+@if (!loading && data) {
+<div class="pd-page">
+
+  <!-- Hero Header -->
+  <div class="pd-hero">
+    <div class="pd-hero-content">
+      <h1 class="pd-hero-title">Portfolio Executive Dashboard</h1>
+      <p class="pd-hero-subtitle">Health overview &amp; executive KPIs across all portfolios</p>
+    </div>
+    <a routerLink="/portefeuilles" class="btn btn-outline-light btn-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+      </svg>
+      All Portfolios
+    </a>
+  </div>
+
+  <!-- ── KPI Cards ── -->
+  <section class="kpi-section">
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-primary">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.totalPortfolios }}</span>
+          <span class="kpi-label">Portfolios</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-accent kpi-clickable" (click)="drillDown('')" title="Show all projects">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.totalActiveProjects }}</span>
+          <span class="kpi-label">Active Projects</span>
+        </div>
+        <span class="kpi-drill-hint">▼ View</span>
+      </div>
+
+      <div class="kpi-card kpi-success kpi-clickable" (click)="drillDown('ON_TRACK')" title="Show On Track projects">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.onTrackProjectsCount }}</span>
+          <span class="kpi-label">On Track</span>
+        </div>
+        <span class="kpi-drill-hint">▼ View</span>
+      </div>
+
+      <div class="kpi-card kpi-warning kpi-clickable" (click)="drillDown('AT_RISK')" title="Show At Risk projects">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.atRiskProjectsCount }}</span>
+          <span class="kpi-label">At Risk</span>
+        </div>
+        <span class="kpi-drill-hint">▼ View</span>
+      </div>
+
+      <div class="kpi-card kpi-error kpi-clickable" (click)="drillDown('DELAYED')" title="Show Delayed projects">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.delayedProjectsCount }}</span>
+          <span class="kpi-label">Delayed</span>
+        </div>
+        <span class="kpi-drill-hint">▼ View</span>
+      </div>
+
+      <div class="kpi-card kpi-neutral">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.averageProgress | number:'1.0-0' }}%</span>
+          <span class="kpi-label">Avg Progress</span>
+        </div>
+      </div>
+
+      <div class="kpi-card kpi-neutral">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.totalActiveTasks }}</span>
+          <span class="kpi-label">Active Tasks</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" [class.kpi-error]="data.overdueTasks > 0" [class.kpi-neutral]="data.overdueTasks === 0">
+        <div class="kpi-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ data.overdueTasks }}</span>
+          <span class="kpi-label">Overdue Tasks</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Charts ── -->
+  <section class="charts-section">
+    <h2 class="section-title">Analytics</h2>
+    <div class="charts-grid">
+
+      <div class="chart-card">
+        <h4 class="chart-title">Tasks by Status</h4>
+        <div class="chart-container"><canvas id="pd-chart-status"></canvas></div>
+      </div>
+
+      <div class="chart-card">
+        <h4 class="chart-title">Project Health Distribution</h4>
+        <div class="chart-container"><canvas id="pd-chart-health"></canvas></div>
+      </div>
+
+      @if (data.portfolioSummaries.length > 0) {
+        <div class="chart-card chart-card-wide">
+          <h4 class="chart-title">Projects per Portfolio</h4>
+          <div class="chart-container"><canvas id="pd-chart-portfolios"></canvas></div>
+        </div>
+      }
+
+    </div>
+  </section>
+
+  <!-- ── Project Health Table ── -->
+  <section class="health-section">
+    <div class="section-header">
+      <h2 class="section-title">Project Health Overview</h2>
+      <div class="table-controls">
+        <input
+          type="text"
+          class="filter-input"
+          [(ngModel)]="searchTerm"
+          placeholder="Search projects…"
+        >
+        <select class="filter-select" [(ngModel)]="healthFilter">
+          <option value="">All statuses</option>
+          <option value="DELAYED">Delayed</option>
+          <option value="AT_RISK">At Risk</option>
+          <option value="ON_TRACK">On Track</option>
+          <option value="COMPLETED">Completed</option>
+        </select>
+      </div>
+    </div>
+
+    @if (filteredProjects.length > 0) {
+      <div class="table-wrapper">
+        <table class="health-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Portfolio</th>
+              <th>Progress</th>
+              <th>Health</th>
+              <th>End Date</th>
+              <th>Tasks</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (proj of filteredProjects; track proj.id) {
+              <tr class="health-row">
+                <td class="cell-name">
+                  <a [routerLink]="['/projects', proj.id]" class="project-link">{{ proj.name }}</a>
+                </td>
+                <td class="cell-portfolio">{{ proj.portfolioName || '—' }}</td>
+                <td class="cell-progress">
+                  <div class="progress-wrapper">
+                    <div class="progress-bar-bg">
+                      <div class="progress-bar-fill"
+                           [class]="progressBarClass(proj.progress)"
+                           [style.width.%]="proj.progress">
+                      </div>
+                    </div>
+                    <span class="progress-text">{{ proj.progress }}%</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="health-badge" [class]="healthClass(proj.healthStatus)">
+                    {{ healthLabel(proj.healthStatus) }}
+                  </span>
+                </td>
+                <td class="cell-date">{{ proj.endDate || '—' }}</td>
+                <td class="cell-tasks">{{ proj.taskCount }}</td>
+                <td>
+                  <a [routerLink]="['/projects', proj.id]" class="btn btn-ghost btn-xs">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M5 12h14"/><path d="M12 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <div class="empty-state">
+        <p>No projects match the current filter.</p>
+        <button class="btn btn-outline btn-sm" (click)="healthFilter = ''; searchTerm = ''">
+          Clear filters
+        </button>
+      </div>
+    }
+  </section>
+
+  <!-- ── Portfolio Summaries ── -->
+  @if (data.portfolioSummaries.length > 0) {
+    <section class="portfolio-summary-section">
+      <h2 class="section-title">Portfolio Summaries</h2>
+      <div class="portfolio-cards-grid">
+        @for (pf of data.portfolioSummaries; track pf.id) {
+          <div class="portfolio-summary-card">
+            <div class="ps-header">
+              <h4 class="ps-name">{{ pf.name }}</h4>
+              <a [routerLink]="['/portefeuilles', pf.id]" class="btn btn-ghost btn-xs">Details</a>
+            </div>
+            <div class="ps-kpi-row">
+              <div class="ps-kpi"><span class="ps-val">{{ pf.projectCount }}</span><span class="ps-lbl">Projects</span></div>
+              <div class="ps-kpi"><span class="ps-val">{{ pf.activeProjectCount }}</span><span class="ps-lbl">Active</span></div>
+              <div class="ps-kpi"><span class="ps-val text-error">{{ pf.delayedProjectCount }}</span><span class="ps-lbl">Delayed</span></div>
+              <div class="ps-kpi"><span class="ps-val text-success">{{ pf.completedProjectCount }}</span><span class="ps-lbl">Done</span></div>
+            </div>
+            <div class="ps-progress-row">
+              <div class="ps-progress-bar-bg">
+                <div class="ps-progress-fill" [style.width.%]="pf.avgProgress"></div>
+              </div>
+              <span class="ps-progress-text">{{ pf.avgProgress | number:'1.0-0' }}% avg</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+</div>
+}

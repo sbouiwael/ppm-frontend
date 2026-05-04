@@ -1,0 +1,115 @@
+<div class="container-sm">
+  <div class="page-header">
+    <h1 class="page-title">Portfolio Details</h1>
+    <a routerLink="/portefeuilles" class="btn btn-outline">&larr; Back to Portfolios</a>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading portfolio details...</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (!loading && portefeuille) {
+    <div class="card">
+      <div class="card-header">
+        <div class="flex justify-between items-center">
+          @if (!editing) {
+            <h2 class="card-title">{{ portefeuille.nom }}</h2>
+            @if (auth.hasRole('ADMIN','PMO')) {
+              <button class="btn btn-outline btn-sm" (click)="startEditing()">Edit</button>
+            }
+          } @else {
+            <input type="text" class="form-input edit-title-input" [(ngModel)]="editNom" />
+          }
+        </div>
+      </div>
+
+      <div class="card-body">
+        @if (!editing) {
+          @if (portefeuille.description) {
+            <p class="text-muted">{{ portefeuille.description }}</p>
+          }
+        } @else {
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-input" [(ngModel)]="editDescription" rows="3"></textarea>
+          </div>
+          <div class="edit-actions">
+            <button class="btn btn-primary btn-sm" (click)="saveEditing()" [disabled]="!editNom.trim()">Save</button>
+            <button class="btn btn-outline btn-sm" (click)="cancelEditing()">Cancel</button>
+          </div>
+        }
+
+        <!-- Assigned Projects -->
+        <div class="divider" style="margin:16px 0;"></div>
+        <h3 class="section-title">Assigned Projects ({{ portefeuille.projects.length }})</h3>
+
+        @if (portefeuille.projects.length > 0) {
+          <div class="project-list">
+            @for (project of portefeuille.projects; track project.id) {
+              <div class="project-row">
+                <div class="project-info">
+                  <a [routerLink]="['/projects', project.id]" class="project-name">{{ project.name }}</a>
+                  @if (project.description) {
+                    <span class="project-desc">{{ project.description }}</span>
+                  }
+                </div>
+                <div class="project-row-actions">
+                  <a [routerLink]="['/projects', project.id]" class="btn btn-outline btn-sm">View</a>
+                  <a [routerLink]="['/projects', project.id, 'edit']" class="btn btn-outline btn-sm" title="Edit">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14" style="vertical-align:middle;">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </a>
+                  @if (auth.hasRole('ADMIN','PMO')) {
+                    <button class="btn btn-danger btn-sm" (click)="removeProject(project.id)">Remove</button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="text-muted">No projects assigned to this portfolio yet.</p>
+        }
+
+        <!-- Add Existing Project -->
+        <div class="divider" style="margin:16px 0;"></div>
+        <h3 class="section-title">Add Existing Project</h3>
+
+        @if (unassignedProjects.length > 0) {
+          <div class="add-project-controls">
+            <select class="form-input select-input" [(ngModel)]="selectedProjectId">
+              <option [ngValue]="null" disabled>Select a project...</option>
+              @for (up of unassignedProjects; track up.id) {
+                <option [ngValue]="up.id">{{ up.name }}</option>
+              }
+            </select>
+            <button class="btn btn-primary btn-sm" (click)="addProject()" [disabled]="!selectedProjectId">Add</button>
+          </div>
+        } @else {
+          <p class="text-muted">All projects are already assigned to a portfolio.</p>
+        }
+
+        <!-- Create New Project in Portfolio -->
+        <div class="divider" style="margin:16px 0;"></div>
+        <h3 class="section-title">Create New Project</h3>
+        <p class="text-muted" style="margin-bottom: 12px;">
+          Create a new project and assign it directly to this portfolio.
+        </p>
+        <button class="btn btn-primary" (click)="navigateToCreateProject()">
+          + New Project in this Portfolio
+        </button>
+
+      </div>
+    </div>
+
+  } @else if (!loading && !errorMessage) {
+    <div class="card text-center">
+      <p class="text-muted">Portfolio not found.</p>
+      <a routerLink="/portefeuilles" class="btn btn-primary mt-md">Back to Portfolios</a>
+    </div>
+  }
+</div>

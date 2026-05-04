@@ -1,48 +1,229 @@
-<!-- task-list.html -->
-<div style="margin-bottom: 20px;">
-  <a routerLink="/tasks/create" class="btn btn-primary">+ New Task</a>
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Tasks</h1>
+    <a routerLink="/tasks/create" class="btn btn-primary" [hidden]="!canCreate">
+      <span>+</span> New Task
+    </a>
+  </div>
+
+  <div class="card" style="margin-bottom: 12px;">
+    <div class="grid grid-cols-2">
+      <div class="form-group">
+        <label>Select Project *</label>
+        <select [(ngModel)]="projectId" (ngModelChange)="onProjectChange()">
+          <option [ngValue]="null" disabled>-- Select a project --</option>
+          @for (p of projects; track p.id) {
+            <option [ngValue]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-actions" style="align-items: end;">
+        <button class="btn btn-primary" (click)="loadTasks()" [disabled]="!projectId">Load Tasks</button>
+        @if (projectId) {
+          <button class="btn btn-outline" (click)="onViewInGantt($event)">View Gantt</button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Search & Sort Bar -->
+  <div class="search-sort-bar">
+    <div class="search-box">
+      <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1" placeholder="Search tasks..." class="search-input" />
+    </div>
+    <div class="sort-box">
+      <label class="sort-label">Sort by:</label>
+      <select [(ngModel)]="sortBy" (ngModelChange)="currentPage = 1" class="sort-select">
+        <option value="wbs">WBS / Hierarchy</option>
+        <option value="name-asc">Name A-Z</option>
+        <option value="name-desc">Name Z-A</option>
+        <option value="startDate-asc">Start Date (oldest)</option>
+        <option value="startDate-desc">Start Date (newest)</option>
+        <option value="progress-desc">Progress (highest)</option>
+        <option value="progress-asc">Progress (lowest)</option>
+        <option value="duration-desc">Duration (longest)</option>
+        <option value="duration-asc">Duration (shortest)</option>
+        <option value="status">Status</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Loading tasks...</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (!loading && filteredTasks.length > 0) {
+    <p class="result-count">{{ filteredTasks.length }} task(s) found</p>
+    <div class="grid">
+      @for (task of paginatedTasks; track task.id) {
+        <div class="card task-card" (dblclick)="onCardDblClick(task)">
+          <div class="card-header">
+            <div class="flex justify-between items-center">
+              <div class="task-title-row">
+                <!-- Hierarchy type badge -->
+                <span class="badge task-type-badge" [ngClass]="getTaskTypeBadgeClass(task)">
+                  {{ getTaskTypeLabel(task) }}
+                </span>
+                <!-- WBS number -->
+                @if (task.wbsNumber) {
+                  <span class="wbs-chip">{{ task.wbsNumber }}</span>
+                }
+                <h3 class="card-title">
+                  <a [routerLink]="['/tasks', task.id]">{{ task.name }}</a>
+                </h3>
+              </div>
+              <div class="card-actions">
+                @if (task.active === false) {
+                  <span class="badge badge-error">Inactive</span>
+                } @else if (task.status === 'DONE') {
+                  <span class="badge badge-success">Done</span>
+                } @else if (task.status === 'IN_PROGRESS') {
+                  <span class="badge badge-info">In Progress</span>
+                } @else if (task.status === 'BLOCKED') {
+                  <span class="badge badge-warning">Blocked</span>
+                } @else {
+                  <span class="badge badge-primary">Not Started</span>
+                }
+                @if (canWrite) {
+                  <button
+                    class="action-btn"
+                    [class.action-btn-success]="task.active === false"
+                    [class.action-btn-warning]="task.active !== false"
+                    [title]="task.active === false ? 'Activate' : 'Deactivate'"
+                    (click)="toggleActive(task, $event)">
+                    @if (task.active === false) {
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      </svg>
+                      Activate
+                    } @else {
+                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      </svg>
+                      Deactivate
+                    }
+                  </button>
+                }
+                @if (canCreate) {
+                  <button class="action-btn action-btn-subtask" title="Add Subtask" (click)="onAddSubtask(task, $event)">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Subtask
+                  </button>
+                }
+                <button class="action-btn action-btn-edit" title="Edit" (click)="onEdit(task, $event)" [hidden]="!canEdit">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Edit
+                </button>
+                <button class="action-btn action-btn-danger" title="Delete" (click)="askDelete(task, $event)" [hidden]="!canDelete">
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Delete
+                </button>
+              </div>
+            </div>
+
+            <!-- Parent task breadcrumb for subtasks -->
+            @if (task.parentTaskName) {
+              <div class="parent-breadcrumb">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                <span>Under: {{ task.parentTaskName }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-body">
+            @if (task.description) {
+              <p class="text-muted">{{ task.description }}</p>
+            }
+
+            <div class="task-meta">
+              @if (task.progress !== null && task.progress !== undefined) {
+                <div class="progress-container">
+                  <div class="progress-label">
+                    <span>Progress</span>
+                    <span class="progress-value">{{ task.progress }}%</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="task.progress"></div>
+                  </div>
+                </div>
+              }
+
+              <div class="task-dates">
+                @if (task.startDate) {
+                  <div class="meta-item">
+                    <span class="meta-label">Start:</span>
+                    <span class="meta-value">{{ task.startDate | date:'shortDate' }}</span>
+                  </div>
+                }
+                @if (task.endDate) {
+                  <div class="meta-item">
+                    <span class="meta-label">End:</span>
+                    <span class="meta-value">{{ task.endDate | date:'shortDate' }}</span>
+                  </div>
+                }
+                @if (task.durationDays != null) {
+                  <div class="meta-item">
+                    <span class="meta-label">Duration:</span>
+                    <span class="meta-value">{{ task.durationDays }}d</span>
+                  </div>
+                }
+              </div>
+
+              @if (task.workHours != null) {
+                <div class="meta-item" style="margin-top: 8px;">
+                  <span class="meta-label">Planned Work:</span>
+                  <span class="meta-value">{{ task.workHours }}h</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <a [routerLink]="['/tasks', task.id]" class="btn btn-outline btn-sm">View Details</a>
+            <a [routerLink]="['/tasks', task.id, 'assignments']" class="btn btn-outline btn-sm">Assignments</a>
+            @if (projectId) {
+              <button class="btn btn-outline btn-sm" (click)="onViewInGantt($event)">Gantt</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    <app-pagination
+      [totalItems]="totalFiltered"
+      [pageSize]="pageSize"
+      [currentPage]="currentPage"
+      (pageChange)="onPageChange($event)"
+    />
+  } @else if (!loading && tasks.length > 0 && filteredTasks.length === 0) {
+    <div class="card text-center">
+      <p class="text-muted">No tasks match your search "{{ searchTerm }}".</p>
+    </div>
+  } @else if (!loading && !errorMessage && tasks.length === 0) {
+    <div class="card text-center">
+      <p class="text-muted">No tasks loaded. Select a project from the dropdown above.</p>
+    </div>
+  }
 </div>
 
-@if (tasks.length > 0) {
-  <h2>List of Tasks</h2>
-
-  <ul>
-    @for (task of tasks; track task.id) {
-      <li>
-        <b>
-  <a [routerLink]="['/tasks', task.id]">{{ task.name }}</a>
-</b>
-
-
-        @if (!task.active) {
-          <span style="color: red;">(inactive)</span>
-        }
-
-        @if (task.description) {
-          <div>{{ task.description }}</div>
-        }
-
-        <div style="font-size: 12px;">
-          @if (task.status) {
-            <span>Status: {{ task.status }}</span>
-          }
-          @if (task.progress !== null && task.progress !== undefined) {
-            <span style="margin-left: 10px;">Progress: {{ task.progress }}%</span>
-          }
-        </div>
-
-        @if (task.startDate) {
-          <div style="font-size: 12px;">Start: {{ task.startDate | date:'shortDate' }}</div>
-        }
-
-        @if (task.endDate) {
-          <div style="font-size: 12px;">End: {{ task.endDate | date:'shortDate' }}</div>
-        }
-
-        <hr />
-      </li>
-    }
-  </ul>
-} @else {
-  <p>No tasks available.</p>
-}
+<app-confirm-dialog
+  [visible]="showDeleteConfirm"
+  title="Delete Task"
+  [message]="deleteMessage"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()"
+/>

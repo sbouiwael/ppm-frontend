@@ -1,0 +1,124 @@
+<div class="container-sm">
+  <div class="page-header">
+    <h1 class="page-title">Edit Project</h1>
+  </div>
+
+  @if (loadingData) {
+    <div class="loading">Loading project data...</div>
+  }
+
+  @if (!loadingData) {
+    <div class="card">
+      <form [formGroup]="form" (ngSubmit)="submit()">
+
+        <div class="form-group">
+          <label>Project Name *</label>
+          <input type="text" formControlName="name" placeholder="Enter project name" />
+          @if (form.get('name')?.touched && form.get('name')?.invalid) {
+            <div class="form-error">Name is required (minimum 2 characters).</div>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" placeholder="Describe your project..."></textarea>
+        </div>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" formControlName="startDate" />
+          </div>
+          <div class="form-group">
+            <label>End Date</label>
+            <input type="date" formControlName="endDate" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Project Manager *</label>
+          <select formControlName="projectManagerId">
+            <option [ngValue]="null">-- Select Project Manager --</option>
+            @for (u of users; track u.id) {
+              <option [ngValue]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.role }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="active" />
+            Active Project
+          </label>
+        </div>
+
+        <div class="divider"></div>
+        <h3 style="margin-top:16px;">Optional Information</h3>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Portfolio</label>
+            <select formControlName="portefeuilleId">
+              <option [ngValue]="null">-- No Portfolio --</option>
+              @for (pf of portefeuilles; track pf.id) {
+                <option [ngValue]="pf.id">{{ pf.nom }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Program Name</label>
+            <input type="text" formControlName="programName" placeholder="Optional" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Sub Program Name</label>
+          <input type="text" formControlName="subProgramName" placeholder="Optional" />
+        </div>
+
+        <div class="form-group">
+          <label>Objective</label>
+          <textarea formControlName="objective" placeholder="Project objective..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Work Calendar</label>
+          <select formControlName="calendarId">
+            <option [ngValue]="null">-- No Calendar (default: all days) --</option>
+            @for (cal of calendars; track cal.id) {
+              <option [ngValue]="cal.id">{{ cal.name }} ({{ cal.workHoursPerDay }}h/day)</option>
+            }
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>Baseline Start Date</label>
+            <input type="date" formControlName="baselineStartDate" />
+          </div>
+          <div class="form-group">
+            <label>Baseline End Date</label>
+            <input type="date" formControlName="baselineEndDate" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Progress (%)</label>
+          <input type="number" formControlName="progress" min="0" max="100" placeholder="0-100" />
+        </div>
+
+        @if (errorMsg) {
+          <div class="alert alert-error">{{ errorMsg }}</div>
+        }
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : 'Save Changes' }}
+          </button>
+          <a routerLink="/projects" class="btn btn-outline">Cancel</a>
+        </div>
+
+      </form>
+    </div>
+  }
+</div>
