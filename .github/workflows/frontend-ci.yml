@@ -13,6 +13,7 @@
 name: Frontend CI/CD
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -36,10 +37,15 @@ env:
   NODE_VERSION: '22'
 
 jobs:
-  # ── 1. Lint & Tests ───────────────────────────────────────────────────────
+  # ── 1. Unit Tests ─────────────────────────────────────────────────────────
   test:
-    name: Lint & Unit Tests
+    name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    # Principe du moindre privilege — ce job a seulement besoin de lire le repo
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
@@ -72,8 +78,9 @@ jobs:
   docker:
     name: Build & Push Docker Image
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
+    timeout-minutes: 25
 
     outputs:
       image-tag: ${{ steps.meta.outputs.version }}
@@ -81,18 +88,18 @@ jobs:
 
     permissions:
       contents: read
-      packages: write
+      packages: write   # required to push to GHCR
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4.0.0
 
       - name: Extract image metadata
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6.0.0
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
@@ -100,14 +107,14 @@ jobs:
             type=raw,value=latest,enable=true
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4.1.0
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           push: true
@@ -117,39 +124,71 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ── 3. Security Scan ──────────────────────────────────────────────────────
+  # NOTE: l'image vient d'etre poussee sur GHCR par le job "docker" en mode prive.
+  # Trivy doit s'authentifier a GHCR pour la tirer, sinon il echoue en 12s avec un 401
+  # et n'ecrit jamais le SARIF -> l'upload casse derriere avec "Path does not exist".
   scan:
     name: Trivy Vulnerability Scan
     needs: docker
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     permissions:
       contents: read
-      security-events: write
+      packages: read           # required to pull image from GHCR
+      security-events: write   # required to upload SARIF (needs Code Scanning enabled in repo settings)
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Trivy (fail on CRITICAL)
-        uses: aquasecurity/trivy-action@master
+      - name: Login to GHCR (so Trivy can pull the private image)
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Etape 1 — produire le SARIF SANS faire echouer le job.
+      # On retire 'exit-code' pour garantir que le fichier est ecrit
+      # meme si des vulnerabilites sont detectees.
+      - name: Run Trivy (write SARIF — never fail)
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ needs.docker.outputs.image-ref }}
           format: sarif
           output: trivy-results.sarif
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
           ignore-unfixed: true
 
-      - name: Upload SARIF
-        if: always()
+      # Etape 2 — upload du SARIF dans l'onglet Security.
+      # 'continue-on-error' evite de casser le pipeline si Code Scanning
+      # n'est pas active dans les reglages du repo (cas du repo prive sans GHAS).
+      - name: Upload Trivy SARIF to GitHub Security
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
+          category: trivy
+
+      # Etape 3 — gate qualite : on rejoue Trivy avec exit-code pour bloquer
+      # le build sur les CVE CRITICAL non corrigeables.
+      # Sortie 'table' pour avoir un resume lisible dans les logs.
+      - name: Fail build on CRITICAL vulnerabilities
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: ${{ needs.docker.outputs.image-ref }}
+          format: table
+          severity: 'CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
 
   # ── 4. CodeQL Security Analysis ──────────────────────────────────────────
   codeql:
     name: CodeQL Security Analysis
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     permissions:
       actions: read
@@ -166,7 +205,13 @@ jobs:
           languages: javascript
           queries: security-and-quality
 
+      # 'continue-on-error' tolere le cas ou Code Scanning n'est pas active
+      # dans Settings -> Code security. Pour reactiver le blocage du build :
+      # 1) repo public -> Settings -> Code security -> "Enable" sur Code scanning
+      # 2) repo prive  -> il faut GitHub Advanced Security (payant)
+      # Puis retirer la ligne 'continue-on-error' ci-dessous.
       - name: Perform CodeQL Analysis
+        continue-on-error: true
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:javascript"
@@ -176,6 +221,12 @@ jobs:
     name: Promote → test
     needs: [docker, scan]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Principe du moindre privilege — le push vers ppm-gitops utilise GITOPS_TOKEN (PAT)
+    # et non GITHUB_TOKEN, donc 'contents: read' suffit pour ce repo-ci.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout GitOps repo
@@ -190,6 +241,7 @@ jobs:
           TAG="${{ needs.docker.outputs.image-tag }}"
           FILE="gitops/charts/ppm-frontend/values-test.yaml"
 
+          # Use sed as a portable fallback (yq not always available on runners)
           sed -i "s|^  tag:.*|  tag: \"${TAG}\"|" "$FILE"
 
           cd gitops
@@ -197,6 +249,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add charts/ppm-frontend/values-test.yaml
 
+          # Only commit if there is a real change
           if git diff --staged --quiet; then
             echo "No image tag change — skipping commit."
           else
