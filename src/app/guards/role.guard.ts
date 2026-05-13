@@ -29,8 +29,10 @@ import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth-service';
 
 export function roleGuard(...allowedRoles: string[]): CanActivateFn {
-  // La fonction retournee est la vraie CanActivateFn — inject() est appele ici (pas dans la factory)
-  return () => {
+  // La fonction retournee est la vraie CanActivateFn — inject() est appele ici (pas dans la factory).
+  // Params route/state declares pour matcher CanActivateFn et eviter le warning
+  // CodeQL "Superfluous trailing arguments" sur les call sites des tests.
+  return (_route, _state) => {
     const auth = inject(AuthService);
     const router = inject(Router);
 

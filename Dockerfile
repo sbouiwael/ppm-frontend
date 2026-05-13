@@ -45,6 +45,12 @@ RUN npx ng build --configuration production
 # ---- Stage 2: Serve with Nginx ----
 FROM nginx:alpine
 
+# Apply latest Alpine security patches at build time. Without this, CVEs
+# in nghttp2, xz, libxpm etc. detected by Trivy persist in the image even
+# though Alpine has published fixes. This pulls patched packages from the
+# Alpine repos at build time. --no-cache avoids leaving apk metadata behind.
+RUN apk upgrade --no-cache
+
 # Remove default nginx site
 RUN rm /etc/nginx/conf.d/default.conf
 

@@ -23,7 +23,10 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth-service';
 
-export const authGuard: CanActivateFn = () => {
+// Angular's CanActivateFn declares (route, state) — we don't use them, but
+// declaring them explicitly satisfies CodeQL js/superfluous-trailing-arguments
+// when tests call this guard with mocked route/state values.
+export const authGuard: CanActivateFn = (_route, _state) => {
   const auth = inject(AuthService);
   const router = inject(Router);
 

@@ -46,7 +46,15 @@ export interface HasUnsavedChanges {
  * Utilise window.confirm() pour afficher un dialogue natif.
  * En production, on pourrait remplacer par un dialog Angular plus elabore.
  */
-export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (component) => {
+// CanDeactivateFn declares (component, currentRoute, currentState, nextState) —
+// we only need 'component', but declaring the rest as _ silences CodeQL's
+// js/superfluous-trailing-arguments rule on test call sites that mock all 4.
+export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (
+  component,
+  _currentRoute,
+  _currentState,
+  _nextState,
+) => {
   // Si le composant n'a pas de modifications non sauvegardees, autoriser la navigation
   if (!component.hasUnsavedChanges()) {
     return true;
