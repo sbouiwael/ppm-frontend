@@ -413,7 +413,10 @@ jobs:
 
     permissions:
       contents:     read
-      packages:     read     # pull image from GHCR
+      # 'write' (not 'read') is required: actions/attest-sbom with
+      # push-to-registry: true attaches a referrer manifest to the image
+      # in GHCR — that's an OCI write (blobs/uploads endpoint).
+      packages:     write
       id-token:     write    # required for keyless attestation (Sigstore)
       attestations: write    # required for actions/attest-sbom
 
@@ -504,6 +507,16 @@ jobs:
         uses: step-security/harden-runner@v2
         with:
           egress-policy: audit
+
+      # Required when push-to-registry: true — the attestation is written as
+      # an OCI referrer alongside the image. Without auth, attest-build-provenance
+      # fails with: "No credentials found for registry ghcr.io".
+      - name: Login to GHCR
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate build provenance attestation
         uses: actions/attest-build-provenance@v2
