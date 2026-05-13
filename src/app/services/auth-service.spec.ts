@@ -23,7 +23,12 @@ describe('AuthService', () => {
     localStorage.clear();
 
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
 
     service = TestBed.inject(AuthService);
@@ -71,7 +76,12 @@ describe('AuthService', () => {
     // Re-create service to pick up stored user
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
     const freshService = TestBed.inject(AuthService);
     expect(freshService.isLoggedIn).toBe(true);
@@ -87,7 +97,12 @@ describe('AuthService', () => {
     localStorage.setItem('ppm_auth', JSON.stringify(MOCK_USER));
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
     const freshService = TestBed.inject(AuthService);
 
@@ -99,7 +114,12 @@ describe('AuthService', () => {
     localStorage.setItem('ppm_auth', JSON.stringify(MOCK_USER));
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
     const freshService = TestBed.inject(AuthService);
 
@@ -115,7 +135,12 @@ describe('AuthService', () => {
     localStorage.setItem('ppm_auth', JSON.stringify(MOCK_USER));
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
     const freshService = TestBed.inject(AuthService);
     const freshHttpMock = TestBed.inject(HttpTestingController);
@@ -136,7 +161,12 @@ describe('AuthService', () => {
     localStorage.setItem('ppm_auth', '{broken json');
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+        AuthService,
+      ],
     });
     const freshService = TestBed.inject(AuthService);
     expect(freshService.isLoggedIn).toBe(false);

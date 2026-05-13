@@ -42,10 +42,12 @@ profile:
 #    fresh: 70
 #    total: 50
 
-# Qodana JS linter — analyzes JavaScript, TypeScript, Angular, React, Vue, HTML, CSS.
+# Qodana JS IDE — analyzes JavaScript, TypeScript, Angular, React, Vue, HTML, CSS.
 # Mirrors the backend's Qodana setup (which uses qodana-jvm-community for Java).
-# For all supported languages see https://www.jetbrains.com/help/qodana/linters.html
-linter: jetbrains/qodana-js:2025.3
+# We use the IDE shortcut (QDJS) instead of the legacy 'linter:' image spec
+# to avoid the "has image value, please use --image param" warning.
+# For all supported IDEs see https://www.jetbrains.com/help/qodana/linters.html
+ide: QDJS
 
 # Exclude generated/vendored directories from analysis
 exclude:
