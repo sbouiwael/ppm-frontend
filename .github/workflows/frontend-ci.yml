@@ -82,8 +82,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
+      # We use `npm install` instead of `npm ci` because Angular's native deps
+      # (lightningcss, @swc/core via napi-postinstall) record platform-specific
+      # optional entries (@emnapi/core, @emnapi/runtime) only for the host OS.
+      # When the lockfile is generated on Windows but `npm ci` runs on Linux,
+      # the strict mode fails with "Missing X from lock file". `npm install`
+      # still respects the lockfile but tolerates platform-specific gaps.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund --prefer-offline
 
       - name: Prettier — check formatting
         run: npm run lint
@@ -122,8 +128,14 @@ jobs:
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
             ${{ runner.os }}-angular-
 
+      # We use `npm install` instead of `npm ci` because Angular's native deps
+      # (lightningcss, @swc/core via napi-postinstall) record platform-specific
+      # optional entries (@emnapi/core, @emnapi/runtime) only for the host OS.
+      # When the lockfile is generated on Windows but `npm ci` runs on Linux,
+      # the strict mode fails with "Missing X from lock file". `npm install`
+      # still respects the lockfile but tolerates platform-specific gaps.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund --prefer-offline
 
       - name: Run unit tests with coverage
         run: npm run test:ci
@@ -189,8 +201,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
 
+      # We use `npm install` instead of `npm ci` because Angular's native deps
+      # (lightningcss, @swc/core via napi-postinstall) record platform-specific
+      # optional entries (@emnapi/core, @emnapi/runtime) only for the host OS.
+      # When the lockfile is generated on Windows but `npm ci` runs on Linux,
+      # the strict mode fails with "Missing X from lock file". `npm install`
+      # still respects the lockfile but tolerates platform-specific gaps.
       - name: Install dependencies
-        run: npm ci
+        run: npm install --no-audit --no-fund --prefer-offline
 
       - name: Build (production)
         run: npm run build:prod
