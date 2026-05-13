@@ -140,22 +140,28 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:ci
 
-      # Strict coverage gate — fails the build if line coverage < COVERAGE_MIN.
-      # Parses lcov.info (the universal coverage format produced by vitest/v8).
+      # Strict coverage gate — fails the build if statement coverage < COVERAGE_MIN.
+      # Vitest 4 + @vitest/coverage-v8 emits clover.xml under coverage/<project>/
+      # (e.g. coverage/ppm_front/clover.xml). We find it and parse the
+      # project-level <metrics> line for statement totals.
       - name: Enforce coverage threshold (${{ env.COVERAGE_MIN }}%)
         run: |
-          if [ ! -f coverage/lcov.info ]; then
-            echo "::error::coverage/lcov.info not found — coverage was not generated."
+          CLOVER=$(find coverage -name clover.xml 2>/dev/null | head -1)
+          if [ -z "$CLOVER" ]; then
+            echo "::error::clover.xml not found under coverage/ — coverage was not generated."
+            ls -laR coverage/ 2>/dev/null || echo "coverage/ directory missing"
             exit 1
           fi
-          LH=$(awk -F: '/^LH:/{s+=$2} END{print s+0}' coverage/lcov.info)
-          LF=$(awk -F: '/^LF:/{s+=$2} END{print s+0}' coverage/lcov.info)
-          if [ "$LF" = "0" ]; then
-            echo "::error::No lines counted in coverage report."
+          echo "Using coverage file: $CLOVER"
+          LINE=$(grep -m1 '<metrics statements=' "$CLOVER")
+          LF=$(echo "$LINE" | sed -nE 's/.*<metrics statements="([0-9]+)".*/\1/p')
+          LH=$(echo "$LINE" | sed -nE 's/.*coveredstatements="([0-9]+)".*/\1/p')
+          if [ -z "$LF" ] || [ "$LF" = "0" ]; then
+            echo "::error::No statements counted in coverage report."
             exit 1
           fi
           PCT=$(awk -v lh=$LH -v lf=$LF 'BEGIN{ printf "%.2f", lh*100/lf }')
-          echo "Line coverage: $PCT% (lines hit: $LH / $LF)"
+          echo "Statement coverage: $PCT% ($LH / $LF)"
           echo "## Coverage: $PCT%" >> $GITHUB_STEP_SUMMARY
           awk -v pct=$PCT -v min=${{ env.COVERAGE_MIN }} 'BEGIN{ exit (pct+0 >= min+0 ? 0 : 1) }' \
             || { echo "::error::Coverage $PCT% is below threshold ${{ env.COVERAGE_MIN }}%"; exit 1; }
