@@ -30,7 +30,13 @@ WORKDIR /app
 
 # Cache dependencies (re-downloaded only when package files change)
 COPY package.json package-lock.json ./
-RUN npm ci
+# `npm install` instead of `npm ci` for the same cross-platform reason as in
+# .github/workflows/frontend-ci.yml: optional native deps (@emnapi/*) are
+# recorded in the lockfile only for the host OS that ran `npm install`.
+# Windows-generated lockfile + Linux Docker build = "Missing X from lock file"
+# under strict `npm ci`. `npm install` still respects the lockfile but
+# tolerates platform-specific gaps.
+RUN npm install --no-audit --no-fund --prefer-offline
 
 # Copy source and build for production
 COPY . .
