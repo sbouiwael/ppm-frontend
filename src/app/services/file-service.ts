@@ -19,7 +19,11 @@ export class FileService {
    * Telecharge un fichier vers un sous-repertoire d'un projet.
    * Utilise un FormData pour l'envoi multipart.
    */
-  uploadFile(projectId: number, subdirectory: string, file: File): Observable<{ filename: string }> {
+  uploadFile(
+    projectId: number,
+    subdirectory: string,
+    file: File,
+  ): Observable<{ filename: string }> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('subdirectory', subdirectory);
@@ -29,7 +33,7 @@ export class FileService {
   /** Liste les fichiers d'un sous-repertoire d'un projet */
   listFiles(projectId: number, subdirectory: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/${projectId}/files`, {
-      params: { subdirectory }
+      params: { subdirectory },
     });
   }
 }

@@ -43,14 +43,18 @@ describe('BreadcrumbService', () => {
   it('should emit empty breadcrumbs for login page', async () => {
     await router.navigateByUrl('/login');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(0);
   });
 
   it('should emit [Home] for root URL', async () => {
     await router.navigateByUrl('/');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(1);
     expect(items[0].label).toBe('Home');
     expect(items[0].active).toBe(true);
@@ -59,7 +63,9 @@ describe('BreadcrumbService', () => {
   it('should emit [Home, Projects] for /projects', async () => {
     await router.navigateByUrl('/projects');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(2);
     expect(items[0].label).toBe('Home');
     expect(items[0].active).toBe(false);
@@ -70,7 +76,9 @@ describe('BreadcrumbService', () => {
   it('should emit [Home, Projects, Project #42, Gantt] for /projects/42/gantt', async () => {
     await router.navigateByUrl('/projects/42/gantt');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(4);
     expect(items[0].label).toBe('Home');
     expect(items[1].label).toBe('Projects');
@@ -83,15 +91,19 @@ describe('BreadcrumbService', () => {
     await router.navigateByUrl('/projects/42/gantt');
     service.setDynamicLabel('42', 'Core Banking T24');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
-    const projectCrumb = items.find(i => i.url === '/projects/42');
+    service.items$.subscribe((i) => {
+      items = i;
+    });
+    const projectCrumb = items.find((i) => i.url === '/projects/42');
     expect(projectCrumb?.label).toBe('Core Banking T24');
   });
 
   it('should emit [Home, My Tasks] for /my-tasks', async () => {
     await router.navigateByUrl('/my-tasks');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(2);
     expect(items[1].label).toBe('My Tasks');
   });
@@ -99,7 +111,9 @@ describe('BreadcrumbService', () => {
   it('should emit [Home, Capacity Planning] for /capacity', async () => {
     await router.navigateByUrl('/capacity');
     let items: any[] = [];
-    service.items$.subscribe(i => { items = i; });
+    service.items$.subscribe((i) => {
+      items = i;
+    });
     expect(items.length).toBe(2);
     expect(items[1].label).toBe('Capacity Planning');
   });

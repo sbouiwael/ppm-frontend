@@ -7,7 +7,15 @@ import { Component } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, distinctUntilChanged, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 
 import { TaskService } from '../../services/task-service';
 import { BreadcrumbService } from '../../services/breadcrumb-service';
@@ -35,7 +43,7 @@ export class TaskDetails {
   constructor(
     private route: ActivatedRoute,
     private taskService: TaskService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
   ) {
     this.vm$ = this.route.paramMap.pipe(
       map((pm) => {
@@ -45,7 +53,12 @@ export class TaskDetails {
       distinctUntilChanged(),
       switchMap((taskId) => {
         if (taskId === null) {
-          return of<Vm>({ loading: false, errorMessage: 'Invalid task id in URL.', taskId: null, task: null });
+          return of<Vm>({
+            loading: false,
+            errorMessage: 'Invalid task id in URL.',
+            taskId: null,
+            task: null,
+          });
         }
 
         return this.taskService.getTaskById(taskId).pipe(
@@ -59,14 +72,17 @@ export class TaskDetails {
           startWith<Vm>({ loading: true, errorMessage: '', taskId, task: null }),
           catchError((err) => {
             console.error(err);
-            const msg = err?.error?.message
-              || (typeof err?.error === 'string' ? err.error : null)
-              || (err?.status ? `Error ${err.status}: failed to load task details` : 'Error loading task details.');
+            const msg =
+              err?.error?.message ||
+              (typeof err?.error === 'string' ? err.error : null) ||
+              (err?.status
+                ? `Error ${err.status}: failed to load task details`
+                : 'Error loading task details.');
             return of<Vm>({ loading: false, errorMessage: msg, taskId, task: null });
-          })
+          }),
         );
       }),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 }

@@ -154,7 +154,11 @@
   animation: spin 0.7s linear infinite;
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .capacity-alert {
   margin: var(--space-md) 0 0;
@@ -217,10 +221,18 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.check-week--available    { background-color: #f0fdf4; }
-.check-week--near         { background-color: #fffbeb; }
-.check-week--overloaded   { background-color: #fef2f2; }
-.check-week--no-capacity  { background-color: var(--color-bg); }
+.check-week--available {
+  background-color: #f0fdf4;
+}
+.check-week--near {
+  background-color: #fffbeb;
+}
+.check-week--overloaded {
+  background-color: #fef2f2;
+}
+.check-week--no-capacity {
+  background-color: var(--color-bg);
+}
 
 .check-week-header {
   display: flex;
@@ -246,10 +258,22 @@
   border-radius: 999px;
 }
 
-.check-week--available    .check-week-status-badge { background-color: #bbf7d0; color: #065f46; }
-.check-week--near         .check-week-status-badge { background-color: #fde68a; color: #92400e; }
-.check-week--overloaded   .check-week-status-badge { background-color: #fecaca; color: #7f1d1d; }
-.check-week--no-capacity  .check-week-status-badge { background-color: var(--color-border); color: var(--color-text-secondary); }
+.check-week--available .check-week-status-badge {
+  background-color: #bbf7d0;
+  color: #065f46;
+}
+.check-week--near .check-week-status-badge {
+  background-color: #fde68a;
+  color: #92400e;
+}
+.check-week--overloaded .check-week-status-badge {
+  background-color: #fecaca;
+  color: #7f1d1d;
+}
+.check-week--no-capacity .check-week-status-badge {
+  background-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
 
 .check-week-body {
   display: flex;
@@ -263,14 +287,27 @@
   font-size: var(--font-size-xs);
 }
 
-.check-label { color: var(--color-text-secondary); }
-.check-value { font-weight: 600; color: var(--color-primary); }
+.check-label {
+  color: var(--color-text-secondary);
+}
+.check-value {
+  font-weight: 600;
+  color: var(--color-primary);
+}
 
-.check-week-row--new   .check-value { color: #2563eb; }
-.check-week-row--total .check-value { font-weight: 700; }
-.check-week-row--overload { margin-top: 4px; }
+.check-week-row--new .check-value {
+  color: #2563eb;
+}
+.check-week-row--total .check-value {
+  font-weight: 700;
+}
+.check-week-row--overload {
+  margin-top: 4px;
+}
 
-.value--overload { color: #dc2626; }
+.value--overload {
+  color: #dc2626;
+}
 
 .capacity-no-weeks {
   padding: var(--space-md) var(--space-lg);

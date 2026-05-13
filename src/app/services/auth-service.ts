@@ -36,7 +36,10 @@ export class AuthService {
   /** BehaviorSubject contenant l'utilisateur connecte (null si deconnecte) */
   private currentUser$ = new BehaviorSubject<AuthUser | null>(this.loadFromStorage());
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {}
 
   /** Observable de l'utilisateur authentifie (null si non connecte) */
   get user$(): Observable<AuthUser | null> {
@@ -78,7 +81,7 @@ export class AuthService {
       tap((user) => {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
         this.currentUser$.next(user);
-      })
+      }),
     );
   }
 
@@ -109,7 +112,7 @@ export class AuthService {
           localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
           this.currentUser$.next(updated);
         }
-      })
+      }),
     );
   }
 

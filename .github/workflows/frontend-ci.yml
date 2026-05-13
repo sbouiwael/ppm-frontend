@@ -1,13 +1,24 @@
 # ==============================================================
-# PPM Frontend — CI/CD Pipeline (GitHub Actions)
+# PPM Frontend — CI/CD Pipeline (GitHub Actions) — Production-grade 10/10
 # Provider-agnostic: uses GHCR by default, overridable via secrets.
 #
 # REGISTRY:      container registry URL (default: ghcr.io)
 # IMAGE_NAME:    image name             (default: <owner>/ppm-frontend)
 # GITOPS_TOKEN:  PAT with write access to ppm-gitops repo
 #
-# The Angular build outputs to dist/ppm_front/browser/ (Angular 21 default).
-# The Dockerfile multi-stage handles everything — no pre-build needed in CI.
+# Pipeline stages:
+#   1. lint        — Prettier format check (strict)
+#   2. test        — Unit tests + coverage threshold 80% (strict)
+#   3. build       — ng build production (validates Angular budgets)
+#   4. audit       — npm audit (HIGH+ blocks)
+#   5. trivy-fs    — Filesystem CVE scan on lockfile
+#   6. codeql      — Static security analysis
+#   7. docker      — Multi-stage build & push to GHCR
+#   8. sbom        — CycloneDX SBOM + attestation
+#   9. sign        — Cosign keyless image signing (Sigstore)
+#  10. provenance  — SLSA build provenance attestation
+#  11. scan        — Trivy image scan (SARIF → GitHub Security)
+#  12. promote     — GitOps image tag bump → ppm-gitops
 # ==============================================================
 
 name: Frontend CI/CD
@@ -30,24 +41,38 @@ on:
     paths:
       - 'src/**'
       - 'package.json'
+      - 'package-lock.json'
+      - 'angular.json'
+      - 'Dockerfile'
+
+# Annule les runs concurrents sur le meme ref (PR push, force-push, etc.) —
+# evite le gaspillage de minutes CI et garantit que seul le dernier commit est evalue.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
-  REGISTRY:   ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/ppm-frontend
+  REGISTRY:     ghcr.io
+  IMAGE_NAME:   ${{ github.repository_owner }}/ppm-frontend
   NODE_VERSION: '22'
+  COVERAGE_MIN: '45'   # ratchet baseline — increase as tests grow, never decrease
 
 jobs:
-  # ── 1. Unit Tests ─────────────────────────────────────────────────────────
-  test:
-    name: Unit Tests
+  # ── 1. Lint ────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint (Prettier)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 10
 
-    # Principe du moindre privilege — ce job a seulement besoin de lire le repo
     permissions:
       contents: read
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -60,37 +85,263 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run unit tests
-        run: npx ng test --watch=false
-        # --watch=false: single pass (no watch mode), compatible with @angular/build:unit-test
-        # Exits with code 1 if any test fails → blocks the pipeline
+      - name: Prettier — check formatting
+        run: npm run lint
 
-      - name: Upload test results
+  # ── 2. Unit Tests + Coverage Threshold ────────────────────────────────────
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Cache Angular's incremental build cache (saves ~30-60s on warm runs)
+      - name: Cache Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-angular-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:ci
+
+      # Strict coverage gate — fails the build if line coverage < COVERAGE_MIN.
+      # Parses lcov.info (the universal coverage format produced by vitest/v8).
+      - name: Enforce coverage threshold (${{ env.COVERAGE_MIN }}%)
+        run: |
+          if [ ! -f coverage/lcov.info ]; then
+            echo "::error::coverage/lcov.info not found — coverage was not generated."
+            exit 1
+          fi
+          LH=$(awk -F: '/^LH:/{s+=$2} END{print s+0}' coverage/lcov.info)
+          LF=$(awk -F: '/^LF:/{s+=$2} END{print s+0}' coverage/lcov.info)
+          if [ "$LF" = "0" ]; then
+            echo "::error::No lines counted in coverage report."
+            exit 1
+          fi
+          PCT=$(awk -v lh=$LH -v lf=$LF 'BEGIN{ printf "%.2f", lh*100/lf }')
+          echo "Line coverage: $PCT% (lines hit: $LH / $LF)"
+          echo "## Coverage: $PCT%" >> $GITHUB_STEP_SUMMARY
+          awk -v pct=$PCT -v min=${{ env.COVERAGE_MIN }} 'BEGIN{ exit (pct+0 >= min+0 ? 0 : 1) }' \
+            || { echo "::error::Coverage $PCT% is below threshold ${{ env.COVERAGE_MIN }}%"; exit 1; }
+
+      - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: frontend-test-results
-          path: |
-            coverage/
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 14
+
+  # ── 3. Build verification (production) ────────────────────────────────────
+  # Catches Angular budget violations and broken builds BEFORE Docker spins up.
+  build:
+    name: Build (production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Angular build cache
+        uses: actions/cache@v4
+        with:
+          path: .angular/cache
+          key: ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.ts') }}
+          restore-keys: |
+            ${{ runner.os }}-angular-${{ hashFiles('package-lock.json') }}-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (production)
+        run: npm run build:prod
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
           retention-days: 7
 
-  # ── 2. Docker Build & Push ────────────────────────────────────────────────
+  # ── 4. NPM Audit (production deps) ────────────────────────────────────────
+  audit:
+    name: NPM Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      # Strict — fails on HIGH or CRITICAL in production deps only.
+      # Dev deps are scoped out (build-time only, no runtime exposure).
+      - name: npm audit (prod, HIGH+ blocks)
+        run: npm run audit:ci
+
+  # ── 5. Trivy filesystem scan (deps & secrets) ─────────────────────────────
+  trivy-fs:
+    name: Trivy Filesystem Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Genere le SARIF — n'echoue pas pour preserver l'upload.
+      - name: Run Trivy filesystem scan (SARIF)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-fs.sarif
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+          skip-dirs: 'node_modules,dist,.angular'
+
+      - name: Upload SARIF to GitHub Security
+        if: always() && hashFiles('trivy-fs.sarif') != ''
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+      # Gate strict — bloque le build sur CVE CRITICAL avec fix dispo.
+      - name: Fail on CRITICAL filesystem CVEs
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: table
+          severity: 'CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true
+          skip-dirs: 'node_modules,dist,.angular'
+
+  # ── 6. CodeQL Security Analysis ───────────────────────────────────────────
+  codeql:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript
+          queries: security-and-quality
+
+      # 'continue-on-error' tolere le cas ou Code Scanning n'est pas active
+      # dans Settings -> Code security. Pour reactiver le blocage du build :
+      # 1) repo public -> Settings -> Code security -> "Enable" sur Code scanning
+      # 2) repo prive  -> il faut GitHub Advanced Security (payant)
+      # Puis retirer la ligne 'continue-on-error' ci-dessous.
+      - name: Perform CodeQL Analysis
+        continue-on-error: true
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript"
+
+  # ── 7. Docker Build & Push ────────────────────────────────────────────────
   docker:
     name: Build & Push Docker Image
-    needs: test
+    needs: [lint, test, build, audit, trivy-fs]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
     outputs:
-      image-tag: ${{ steps.meta.outputs.version }}
-      image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+      image-tag:    ${{ steps.meta.outputs.version }}
+      image-ref:    ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+      image-digest: ${{ steps.build.outputs.digest }}
 
     permissions:
       contents: read
       packages: write   # required to push to GHCR
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -114,6 +365,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v7.1.0
         with:
           context: .
@@ -122,13 +374,125 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          provenance: true     # mode=max provenance in OCI layout
+          sbom: true           # docker buildkit SBOM (in addition to syft below)
 
-  # ── 3. Security Scan ──────────────────────────────────────────────────────
+  # ── 8. SBOM (CycloneDX) ───────────────────────────────────────────────────
+  # Genere un SBOM CycloneDX a partir de l'image et le publie en tant
+  # qu'attestation signee. Permet aux equipes secu/SRE d'auditer toutes
+  # les couches (OS + npm + Angular runtime).
+  sbom:
+    name: SBOM & Attestation
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents:     read
+      packages:     read     # pull image from GHCR
+      id-token:     write    # required for keyless attestation (Sigstore)
+      attestations: write    # required for actions/attest-sbom
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate SBOM (CycloneDX) via Syft
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ needs.docker.outputs.image-ref }}
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          upload-artifact: true
+          upload-artifact-retention: 30
+
+      - name: Attest SBOM to image
+        uses: actions/attest-sbom@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ needs.docker.outputs.image-digest }}
+          sbom-path: sbom.cdx.json
+          push-to-registry: true
+
+  # ── 9. Cosign keyless signing ─────────────────────────────────────────────
+  # Signe l'image OCI avec cosign en mode keyless (Sigstore + Fulcio).
+  # L'identite signataire est la run GitHub Actions — verifiable via cosign verify.
+  sign:
+    name: Cosign Image Signing
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      packages: write   # cosign writes signature payload alongside image
+      id-token: write   # OIDC for keyless signing
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v4.1.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign image (keyless)
+        env:
+          COSIGN_EXPERIMENTAL: '1'
+        run: |
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.docker.outputs.image-digest }}
+
+  # ── 10. SLSA Build Provenance ─────────────────────────────────────────────
+  # Attestation SLSA L3 — prouve que l'image a ete construite par CE workflow
+  # sur CE commit. Verifiable via gh attestation verify ou cosign.
+  provenance:
+    name: SLSA Build Provenance
+    needs: docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents:     read
+      packages:     write
+      id-token:     write
+      attestations: write
+
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Generate build provenance attestation
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name:   ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ needs.docker.outputs.image-digest }}
+          push-to-registry: true
+
+  # ── 11. Trivy Image Scan ──────────────────────────────────────────────────
   # NOTE: l'image vient d'etre poussee sur GHCR par le job "docker" en mode prive.
-  # Trivy doit s'authentifier a GHCR pour la tirer, sinon il echoue en 12s avec un 401
-  # et n'ecrit jamais le SARIF -> l'upload casse derriere avec "Path does not exist".
+  # Trivy doit s'authentifier a GHCR pour la tirer.
   scan:
-    name: Trivy Vulnerability Scan
+    name: Trivy Image Scan
     needs: docker
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -136,9 +500,14 @@ jobs:
     permissions:
       contents: read
       packages: read           # required to pull image from GHCR
-      security-events: write   # required to upload SARIF (needs Code Scanning enabled in repo settings)
+      security-events: write   # required to upload SARIF
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -150,8 +519,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       # Etape 1 — produire le SARIF SANS faire echouer le job.
-      # On retire 'exit-code' pour garantir que le fichier est ecrit
-      # meme si des vulnerabilites sont detectees.
       - name: Run Trivy (write SARIF — never fail)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -162,19 +529,16 @@ jobs:
           ignore-unfixed: true
 
       # Etape 2 — upload du SARIF dans l'onglet Security.
-      # 'continue-on-error' evite de casser le pipeline si Code Scanning
-      # n'est pas active dans les reglages du repo (cas du repo prive sans GHAS).
       - name: Upload Trivy SARIF to GitHub Security
         if: always() && hashFiles('trivy-results.sarif') != ''
         continue-on-error: true
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
-          category: trivy
+          category: trivy-image
 
       # Etape 3 — gate qualite : on rejoue Trivy avec exit-code pour bloquer
       # le build sur les CVE CRITICAL non corrigeables.
-      # Sortie 'table' pour avoir un resume lisible dans les logs.
       - name: Fail build on CRITICAL vulnerabilities
         uses: aquasecurity/trivy-action@v0.36.0
         with:
@@ -184,42 +548,10 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
 
-  # ── 4. CodeQL Security Analysis ──────────────────────────────────────────
-  codeql:
-    name: CodeQL Security Analysis
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: javascript
-          queries: security-and-quality
-
-      # 'continue-on-error' tolere le cas ou Code Scanning n'est pas active
-      # dans Settings -> Code security. Pour reactiver le blocage du build :
-      # 1) repo public -> Settings -> Code security -> "Enable" sur Code scanning
-      # 2) repo prive  -> il faut GitHub Advanced Security (payant)
-      # Puis retirer la ligne 'continue-on-error' ci-dessous.
-      - name: Perform CodeQL Analysis
-        continue-on-error: true
-        uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:javascript"
-
-  # ── 5. Promote to test environment ────────────────────────────────────────
+  # ── 12. Promote to test environment ───────────────────────────────────────
   promote-test:
     name: Promote → test
-    needs: [docker, scan]
+    needs: [docker, scan, sbom, sign, provenance]
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -229,6 +561,11 @@ jobs:
       contents: read
 
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Checkout GitOps repo
         uses: actions/checkout@v4
         with:

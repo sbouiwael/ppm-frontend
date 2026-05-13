@@ -23,33 +23,54 @@ describe('MyTasks', () => {
 
   const sampleTasks: MyTaskDTO[] = [
     {
-      assignmentId: 1, taskId: 101, taskName: 'Task A',
-      taskStatus: 'IN_PROGRESS', taskProgress: 40,
-      startDate: '2026-01-01', endDate: inThreeDays,
-      wbsNumber: '1.1', assignedHours: 20,
-      projectId: 10, projectName: 'Project Alpha',
-      durationDays: 5, workHours: 40
+      assignmentId: 1,
+      taskId: 101,
+      taskName: 'Task A',
+      taskStatus: 'IN_PROGRESS',
+      taskProgress: 40,
+      startDate: '2026-01-01',
+      endDate: inThreeDays,
+      wbsNumber: '1.1',
+      assignedHours: 20,
+      projectId: 10,
+      projectName: 'Project Alpha',
+      durationDays: 5,
+      workHours: 40,
     },
     {
-      assignmentId: 2, taskId: 102, taskName: 'Task B',
-      taskStatus: 'BLOCKED', taskProgress: 10,
-      startDate: '2026-01-01', endDate: yesterday,
-      wbsNumber: '1.2', assignedHours: 10,
-      projectId: 10, projectName: 'Project Alpha',
-      durationDays: 3, workHours: 20
+      assignmentId: 2,
+      taskId: 102,
+      taskName: 'Task B',
+      taskStatus: 'BLOCKED',
+      taskProgress: 10,
+      startDate: '2026-01-01',
+      endDate: yesterday,
+      wbsNumber: '1.2',
+      assignedHours: 10,
+      projectId: 10,
+      projectName: 'Project Alpha',
+      durationDays: 3,
+      workHours: 20,
     },
     {
-      assignmentId: 3, taskId: 103, taskName: 'Task C',
-      taskStatus: 'DONE', taskProgress: 100,
-      startDate: '2026-01-01', endDate: inTenDays,
-      wbsNumber: '2.1', assignedHours: 30,
-      projectId: 20, projectName: 'Project Beta',
-      durationDays: 7, workHours: 56
+      assignmentId: 3,
+      taskId: 103,
+      taskName: 'Task C',
+      taskStatus: 'DONE',
+      taskProgress: 100,
+      startDate: '2026-01-01',
+      endDate: inTenDays,
+      wbsNumber: '2.1',
+      assignedHours: 30,
+      projectId: 20,
+      projectName: 'Project Beta',
+      durationDays: 7,
+      workHours: 56,
     },
   ];
 
   const mockAssignmentService = {
-    getMyTasks: vi.fn().mockReturnValue(of(sampleTasks))
+    getMyTasks: vi.fn().mockReturnValue(of(sampleTasks)),
   };
 
   const mockTaskService = {
@@ -68,8 +89,8 @@ describe('MyTasks', () => {
       providers: [
         provideRouter([]),
         { provide: TaskAssignmentService, useValue: mockAssignmentService },
-        { provide: TaskService,           useValue: mockTaskService },
-        { provide: AuthService,           useValue: authServiceStub },
+        { provide: TaskService, useValue: mockTaskService },
+        { provide: AuthService, useValue: authServiceStub },
       ],
     }).compileComponents();
 
@@ -142,7 +163,7 @@ describe('MyTasks', () => {
 
   it('should build project list from tasks', () => {
     expect(component.projects.length).toBe(2);
-    const names = component.projects.map(p => p.name);
+    const names = component.projects.map((p) => p.name);
     expect(names).toContain('Project Alpha');
     expect(names).toContain('Project Beta');
   });
@@ -190,8 +211,8 @@ describe('MyTasks', () => {
     const task = { ...sampleTasks[0], taskStatus: 'IN_PROGRESS' };
     const actions = component.quickActions(task);
     expect(actions.length).toBe(2);
-    expect(actions.map(a => a.status)).toContain('DONE');
-    expect(actions.map(a => a.status)).toContain('BLOCKED');
+    expect(actions.map((a) => a.status)).toContain('DONE');
+    expect(actions.map((a) => a.status)).toContain('BLOCKED');
   });
 
   it('quickActions() for BLOCKED should return [Resume]', () => {

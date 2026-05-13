@@ -31,9 +31,9 @@ export class NotificationService {
    * Le backend retourne { "count": N } — on mappe en Observable<number> via map().
    */
   getUnreadCount(): Observable<number> {
-    return this.http.get<{ count: number }>(`${this.baseUrl}/me/unread-count`).pipe(
-      map(r => r?.count ?? 0)
-    );
+    return this.http
+      .get<{ count: number }>(`${this.baseUrl}/me/unread-count`)
+      .pipe(map((r) => r?.count ?? 0));
   }
 
   /** Marque une notification comme lue */

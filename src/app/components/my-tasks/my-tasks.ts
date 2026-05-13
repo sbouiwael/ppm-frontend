@@ -64,8 +64,7 @@ export class MyTasks implements OnInit, OnDestroy {
   readonly today = new Date().toISOString().split('T')[0];
 
   /** Date dans 7 jours (pour filtre "cette semaine") */
-  readonly inOneWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-    .toISOString().split('T')[0];
+  readonly inOneWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
   private readonly destroy$ = new Subject<void>();
 
@@ -77,7 +76,8 @@ export class MyTasks implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.assignmentService.getMyTasks()
+    this.assignmentService
+      .getMyTasks()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (tasks) => {
@@ -106,8 +106,12 @@ export class MyTasks implements OnInit, OnDestroy {
   private buildProjectList(): void {
     const seen = new Set<number>();
     this.projects = this.allTasks
-      .filter(t => { const n = !seen.has(t.projectId); seen.add(t.projectId); return n; })
-      .map(t => ({ id: t.projectId, name: t.projectName }))
+      .filter((t) => {
+        const n = !seen.has(t.projectId);
+        seen.add(t.projectId);
+        return n;
+      })
+      .map((t) => ({ id: t.projectId, name: t.projectName }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -116,7 +120,7 @@ export class MyTasks implements OnInit, OnDestroy {
    * Les filtres s'appliquent en AND.
    */
   get filteredTasks(): MyTaskDTO[] {
-    return this.allTasks.filter(t => {
+    return this.allTasks.filter((t) => {
       if (this.filterStatus !== 'ALL' && t.taskStatus !== this.filterStatus) return false;
       if (this.filterOverdue && !this.isOverdue(t)) return false;
       if (this.filterDueSoon && !this.isDueSoon(t)) return false;
@@ -138,18 +142,20 @@ export class MyTasks implements OnInit, OnDestroy {
    * Condition : endDate entre aujourd'hui et aujourd'hui + 7 jours ET statut != DONE
    */
   isDueSoon(t: MyTaskDTO): boolean {
-    return !!t.endDate
-      && t.endDate >= this.today
-      && t.endDate <= this.inOneWeek
-      && t.taskStatus !== 'DONE';
+    return (
+      !!t.endDate &&
+      t.endDate >= this.today &&
+      t.endDate <= this.inOneWeek &&
+      t.taskStatus !== 'DONE'
+    );
   }
 
   /** Retourne la classe CSS appliquee sur la carte selon l'etat de la tache */
   getTaskCardClass(t: MyTaskDTO): string {
     if (t.taskStatus === 'BLOCKED') return 'task-card task-card--blocked';
-    if (this.isOverdue(t))          return 'task-card task-card--overdue';
-    if (t.taskStatus === 'DONE')    return 'task-card task-card--done';
-    if (this.isDueSoon(t))          return 'task-card task-card--due-soon';
+    if (this.isOverdue(t)) return 'task-card task-card--overdue';
+    if (t.taskStatus === 'DONE') return 'task-card task-card--done';
+    if (this.isDueSoon(t)) return 'task-card task-card--due-soon';
     return 'task-card';
   }
 
@@ -184,8 +190,8 @@ export class MyTasks implements OnInit, OnDestroy {
         return [{ label: 'Start', status: 'IN_PROGRESS', css: 'btn-quick btn-quick--start' }];
       case 'IN_PROGRESS':
         return [
-          { label: 'Mark Done',    status: 'DONE',       css: 'btn-quick btn-quick--done'    },
-          { label: 'Mark Blocked', status: 'BLOCKED',    css: 'btn-quick btn-quick--blocked' },
+          { label: 'Mark Done', status: 'DONE', css: 'btn-quick btn-quick--done' },
+          { label: 'Mark Blocked', status: 'BLOCKED', css: 'btn-quick btn-quick--blocked' },
         ];
       case 'BLOCKED':
         return [{ label: 'Resume', status: 'IN_PROGRESS', css: 'btn-quick btn-quick--start' }];
@@ -204,12 +210,13 @@ export class MyTasks implements OnInit, OnDestroy {
     if (this.updatingTaskIds.has(task.taskId)) return; // anti-double-clic
     this.updatingTaskIds.add(task.taskId);
 
-    this.taskService.patchTaskStatus(task.taskId, newStatus)
+    this.taskService
+      .patchTaskStatus(task.taskId, newStatus)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updated) => {
           // Mise a jour locale de la tache pour un feedback immediat sans rechargement complet
-          task.taskStatus   = updated.status ?? newStatus;
+          task.taskStatus = updated.status ?? newStatus;
           task.taskProgress = updated.progress ?? task.taskProgress;
           this.updatingTaskIds.delete(task.taskId);
           this.cdr.detectChanges();

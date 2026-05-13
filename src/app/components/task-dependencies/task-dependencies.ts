@@ -59,7 +59,7 @@ export class TaskDependencies implements OnInit, OnDestroy {
     private depService: TaskDependencyService,
     private taskService: TaskService,
     public auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       otherTaskId: [null, [Validators.required, Validators.min(1)]],
@@ -83,22 +83,28 @@ export class TaskDependencies implements OnInit, OnDestroy {
 
   /** Charge les taches du meme projet (pour le selecteur de dependances) */
   loadSiblingTasks(): void {
-    this.taskService.getTaskById(this.taskId).pipe(
-      takeUntil(this.destroy$),
-      switchMap(task => {
-        if (task?.name) this.currentTaskName = task.name;
-        return task?.projectId ? this.taskService.getTasksByProject(task.projectId) : EMPTY;
-      })
-    ).subscribe({
-      next: (tasks) => {
-        const all = tasks ?? [];
-        const current = all.find(t => t.id === this.taskId);
-        if (current?.name) this.currentTaskName = current.name;
-        this.siblingTasks = all.filter(t => t.id !== this.taskId && t.active !== false);
-        this.cdr.detectChanges();
-      },
-      error: () => { this.siblingTasks = []; this.cdr.detectChanges(); },
-    });
+    this.taskService
+      .getTaskById(this.taskId)
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap((task) => {
+          if (task?.name) this.currentTaskName = task.name;
+          return task?.projectId ? this.taskService.getTasksByProject(task.projectId) : EMPTY;
+        }),
+      )
+      .subscribe({
+        next: (tasks) => {
+          const all = tasks ?? [];
+          const current = all.find((t) => t.id === this.taskId);
+          if (current?.name) this.currentTaskName = current.name;
+          this.siblingTasks = all.filter((t) => t.id !== this.taskId && t.active !== false);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.siblingTasks = [];
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -111,7 +117,7 @@ export class TaskDependencies implements OnInit, OnDestroy {
     if (taskId === this.taskId && this.currentTaskName) {
       return this.currentTaskName;
     }
-    const task = this.siblingTasks.find(t => t.id === taskId);
+    const task = this.siblingTasks.find((t) => t.id === taskId);
     return task ? task.name : `Task #${taskId}`;
   }
 
@@ -131,7 +137,10 @@ export class TaskDependencies implements OnInit, OnDestroy {
     this.errorMessage = '';
 
     this.depService.getPredecessors(this.taskId).subscribe({
-      next: (data) => { this.predecessors = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.predecessors = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
       error: (err) => {
         console.error(err);
         this.predecessors = [];
@@ -141,7 +150,10 @@ export class TaskDependencies implements OnInit, OnDestroy {
     });
 
     this.depService.getSuccessors(this.taskId).subscribe({
-      next: (data) => { this.successors = Array.isArray(data) ? data : []; this.cdr.detectChanges(); },
+      next: (data) => {
+        this.successors = Array.isArray(data) ? data : [];
+        this.cdr.detectChanges();
+      },
       error: (err) => {
         console.error(err);
         this.successors = [];

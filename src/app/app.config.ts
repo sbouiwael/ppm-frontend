@@ -18,6 +18,6 @@ export const appConfig: ApplicationConfig = {
     /** Fournit le routeur avec toutes les routes de l'application */
     provideRouter(routes),
     /** Fournit le client HTTP avec l'intercepteur qui attache le token JWT */
-    provideHttpClient(withInterceptors([authInterceptor]))
-  ]
+    provideHttpClient(withInterceptors([authInterceptor])),
+  ],
 };

@@ -53,11 +53,13 @@ export class UserListComponent implements OnInit {
     private userService: UserService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    public auth: AuthService
+    public auth: AuthService,
   ) {}
 
   /** Indique si l'utilisateur a les droits d'ecriture (creation/edition/suppression) */
-  get canWrite(): boolean { return this.auth.hasRole('ADMIN','RH'); }
+  get canWrite(): boolean {
+    return this.auth.hasRole('ADMIN', 'RH');
+  }
 
   /** Initialisation : charge la liste des utilisateurs */
   ngOnInit(): void {
@@ -70,28 +72,37 @@ export class UserListComponent implements OnInit {
 
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase().trim();
-      result = result.filter(u =>
-        (u.firstName?.toLowerCase().includes(term)) ||
-        (u.lastName?.toLowerCase().includes(term)) ||
-        ((u.firstName + ' ' + u.lastName).toLowerCase().includes(term)) ||
-        (u.email?.toLowerCase().includes(term)) ||
-        (u.role?.toLowerCase().includes(term)) ||
-        (u.weeklyCapacity?.toString().includes(term)) ||
-        (u.createdAt?.includes(term)) ||
-        (u.active !== false ? 'active' : 'inactive').includes(term)
+      result = result.filter(
+        (u) =>
+          u.firstName?.toLowerCase().includes(term) ||
+          u.lastName?.toLowerCase().includes(term) ||
+          (u.firstName + ' ' + u.lastName).toLowerCase().includes(term) ||
+          u.email?.toLowerCase().includes(term) ||
+          u.role?.toLowerCase().includes(term) ||
+          u.weeklyCapacity?.toString().includes(term) ||
+          u.createdAt?.includes(term) ||
+          (u.active !== false ? 'active' : 'inactive').includes(term),
       );
     }
 
     result = [...result].sort((a, b) => {
       switch (this.sortBy) {
-        case 'name-asc': return (a.firstName + ' ' + a.lastName).localeCompare(b.firstName + ' ' + b.lastName);
-        case 'name-desc': return (b.firstName + ' ' + b.lastName).localeCompare(a.firstName + ' ' + a.lastName);
-        case 'role': return (a.role || '').localeCompare(b.role || '');
-        case 'capacity-desc': return (b.weeklyCapacity ?? 0) - (a.weeklyCapacity ?? 0);
-        case 'capacity-asc': return (a.weeklyCapacity ?? 0) - (b.weeklyCapacity ?? 0);
-        case 'active-first': return (b.active !== false ? 1 : 0) - (a.active !== false ? 1 : 0);
-        case 'inactive-first': return (a.active !== false ? 1 : 0) - (b.active !== false ? 1 : 0);
-        default: return 0;
+        case 'name-asc':
+          return (a.firstName + ' ' + a.lastName).localeCompare(b.firstName + ' ' + b.lastName);
+        case 'name-desc':
+          return (b.firstName + ' ' + b.lastName).localeCompare(a.firstName + ' ' + a.lastName);
+        case 'role':
+          return (a.role || '').localeCompare(b.role || '');
+        case 'capacity-desc':
+          return (b.weeklyCapacity ?? 0) - (a.weeklyCapacity ?? 0);
+        case 'capacity-asc':
+          return (a.weeklyCapacity ?? 0) - (b.weeklyCapacity ?? 0);
+        case 'active-first':
+          return (b.active !== false ? 1 : 0) - (a.active !== false ? 1 : 0);
+        case 'inactive-first':
+          return (a.active !== false ? 1 : 0) - (b.active !== false ? 1 : 0);
+        default:
+          return 0;
       }
     });
 
@@ -128,9 +139,9 @@ export class UserListComponent implements OnInit {
         this.loading = false;
         this.users = [];
         this.errorMessage =
-          err?.error?.message
-          || (typeof err?.error === 'string' ? err.error : null)
-          || `Error ${err.status}: failed to load users`;
+          err?.error?.message ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          `Error ${err.status}: failed to load users`;
         this.cdr.detectChanges();
       },
     });

@@ -65,73 +65,105 @@ export const routes: Routes = [
   {
     path: 'my-tasks',
     component: MyTasks,
-    canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
   },
 
   // ── Capacity Planning : planification des ressources (ADMIN/PMO/PM/RH) ──
   {
     path: 'capacity',
     component: CapacityPlanning,
-    canActivate: [roleGuard('ADMIN','PMO','PM','RH')]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'RH')],
   },
 
   // ── Projets : lecture pour tous, creation/edition pour ADMIN, PMO, PM ──
-  { path: 'projects',          component: ProjectList,    canActivate: [authGuard] },
+  { path: 'projects', component: ProjectList, canActivate: [authGuard] },
   {
     path: 'projects/new',
     component: ProjectCreate,
-    canActivate: [roleGuard('ADMIN','PMO','PM')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM')],
+    canDeactivate: [unsavedChangesGuard],
   },
-  { path: 'projects/:id',      component: ProjectDetails, canActivate: [authGuard] },
+  { path: 'projects/:id', component: ProjectDetails, canActivate: [authGuard] },
   {
     path: 'projects/:id/edit',
     component: ProjectEdit,
-    canActivate: [roleGuard('ADMIN','PMO','PM')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM')],
+    canDeactivate: [unsavedChangesGuard],
   },
-  { path: 'projects/:id/gantt',component: Gantt,          canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')] },
+  {
+    path: 'projects/:id/gantt',
+    component: Gantt,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+  },
 
   // ── Portefeuilles : lecture pour ADMIN, PMO, PM, RH ; ecriture pour ADMIN, PMO ──
-  { path: 'portefeuilles',     component: PortefeuilleList,    canActivate: [roleGuard('ADMIN','PMO','PM','RH')] },
-  { path: 'portefeuilles/:id', component: PortefeuilleDetails, canActivate: [roleGuard('ADMIN','PMO','PM','RH')] },
+  {
+    path: 'portefeuilles',
+    component: PortefeuilleList,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'RH')],
+  },
+  {
+    path: 'portefeuilles/:id',
+    component: PortefeuilleDetails,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'RH')],
+  },
 
   // ── Utilisateurs : ecriture pour ADMIN, RH ; lecture pour PMO, PM ──
-  { path: 'users',             component: UserListComponent, canActivate: [roleGuard('ADMIN','RH','PMO','PM')] },
+  {
+    path: 'users',
+    component: UserListComponent,
+    canActivate: [roleGuard('ADMIN', 'RH', 'PMO', 'PM')],
+  },
   {
     path: 'users/new',
     component: UserCreate,
-    canActivate: [roleGuard('ADMIN','RH')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'RH')],
+    canDeactivate: [unsavedChangesGuard],
   },
   {
     path: 'users/:id/edit',
     component: UserEdit,
-    canActivate: [roleGuard('ADMIN','RH')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'RH')],
+    canDeactivate: [unsavedChangesGuard],
   },
 
   // ── Taches : lecture pour tous sauf RH, creation ADMIN/PMO/PM, edition elargie aux DEV/QA/DEVOPS ──
-  { path: 'tasks',              component: TaskList,     canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')] },
+  {
+    path: 'tasks',
+    component: TaskList,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+  },
   {
     path: 'tasks/create',
     component: TaskCreate,
-    canActivate: [roleGuard('ADMIN','PMO','PM')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM')],
+    canDeactivate: [unsavedChangesGuard],
   },
-  { path: 'tasks/:id',          component: TaskDetails,  canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')] },
+  {
+    path: 'tasks/:id',
+    component: TaskDetails,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+  },
   {
     path: 'tasks/:id/edit',
     component: TaskEdit,
-    canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')],
-    canDeactivate: [unsavedChangesGuard]
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+    canDeactivate: [unsavedChangesGuard],
   },
 
   // ── Affectations de taches : gestion ADMIN/PMO/PM, lecture DEV/QA/DEVOPS ──
-  { path: 'tasks/:id/assignments',  component: TaskAssignments,  canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')] },
+  {
+    path: 'tasks/:id/assignments',
+    component: TaskAssignments,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+  },
 
   // ── Dependances de taches : gestion ADMIN/PMO/PM, lecture DEV/QA/DEVOPS ──
-  { path: 'tasks/:id/dependencies', component: TaskDependencies, canActivate: [roleGuard('ADMIN','PMO','PM','DEV','QA','DEVOPS')] },
+  {
+    path: 'tasks/:id/dependencies',
+    component: TaskDependencies,
+    canActivate: [roleGuard('ADMIN', 'PMO', 'PM', 'DEV', 'QA', 'DEVOPS')],
+  },
 
   // ── Wave 2 — Journal d'audit : ADMIN, PMO peuvent tout voir ; PM voit par projet ──
   {

@@ -9,7 +9,15 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, distinctUntilChanged, map, shareReplay, startWith, switchMap, tap } from 'rxjs/operators';
+import {
+  catchError,
+  distinctUntilChanged,
+  map,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs/operators';
 
 import { ProjectService } from '../../services/project-service';
 import { AuthService } from '../../services/auth-service';
@@ -57,7 +65,7 @@ export class ProjectDetails {
     private fileService: FileService,
     private cdr: ChangeDetectorRef,
     public auth: AuthService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
   ) {
     this.vm$ = this.route.paramMap.pipe(
       map((pm) => {
@@ -94,14 +102,16 @@ export class ProjectDetails {
           catchError((err) => {
             console.error(err);
             const msg =
-              err?.error?.message
-              || (typeof err?.error === 'string' ? err.error : null)
-              || (err?.status ? `Error ${err.status}: failed to load project details` : 'Error loading project details.');
+              err?.error?.message ||
+              (typeof err?.error === 'string' ? err.error : null) ||
+              (err?.status
+                ? `Error ${err.status}: failed to load project details`
+                : 'Error loading project details.');
             return of<Vm>({ loading: false, errorMessage: msg, projectId, project: null });
-          })
+          }),
         );
       }),
-      shareReplay(1)
+      shareReplay(1),
     );
   }
 

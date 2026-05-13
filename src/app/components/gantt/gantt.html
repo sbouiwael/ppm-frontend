@@ -13,16 +13,27 @@
         <span class="tool-icon">⊞</span> Fit
       </button>
       <div class="toolbar-sep"></div>
-      <button class="tool-btn" [class.active]="showCriticalPath" (click)="toggleCriticalPath()" title="Toggle Critical Path">
+      <button
+        class="tool-btn"
+        [class.active]="showCriticalPath"
+        (click)="toggleCriticalPath()"
+        title="Toggle Critical Path"
+      >
         <span class="tool-icon cp-icon"></span> Critical Path
       </button>
     </div>
     <div class="toolbar-right">
       <div class="zoom-group">
         <span class="zoom-label">Zoom:</span>
-        <button class="zoom-btn" [class.active]="zoom === 'day'" (click)="setZoom('day')">Day</button>
-        <button class="zoom-btn" [class.active]="zoom === 'week'" (click)="setZoom('week')">Week</button>
-        <button class="zoom-btn" [class.active]="zoom === 'month'" (click)="setZoom('month')">Month</button>
+        <button class="zoom-btn" [class.active]="zoom === 'day'" (click)="setZoom('day')">
+          Day
+        </button>
+        <button class="zoom-btn" [class.active]="zoom === 'week'" (click)="setZoom('week')">
+          Week
+        </button>
+        <button class="zoom-btn" [class.active]="zoom === 'month'" (click)="setZoom('month')">
+          Month
+        </button>
       </div>
     </div>
   </div>
@@ -32,7 +43,7 @@
   }
 
   @if (errorMessage) {
-    <div class="alert alert-error" style="margin: 12px 16px;">{{ errorMessage }}</div>
+    <div class="alert alert-error" style="margin: 12px 16px">{{ errorMessage }}</div>
   }
 
   @if (!loading && tasks.length > 0 && config) {
@@ -49,16 +60,19 @@
             (taskSelected)="onTaskSelected($event)"
             (cellEdited)="onCellEdited($event)"
             (toggleExpand)="onToggleExpand($event)"
-            (addTask)="onAddTask($event)">
+            (addTask)="onAddTask($event)"
+          >
           </gantt-grid>
         </div>
       </div>
 
       <!-- ═══ Splitter ═══ -->
-      <div class="splitter"
-           (pointerdown)="onSplitterPointerDown($event)"
-           (pointermove)="onSplitterPointerMove($event)"
-           (pointerup)="onSplitterPointerUp()">
+      <div
+        class="splitter"
+        (pointerdown)="onSplitterPointerDown($event)"
+        (pointermove)="onSplitterPointerMove($event)"
+        (pointerup)="onSplitterPointerUp()"
+      >
         <div class="splitter-grip"></div>
       </div>
 
@@ -75,7 +89,8 @@
             [selectedTaskId]="selectedTaskId"
             (taskSelected)="onTaskSelected($event)"
             (barDragEnd)="onBarDragEnd($event)"
-            (barResizeEnd)="onBarResizeEnd($event)">
+            (barResizeEnd)="onBarResizeEnd($event)"
+          >
           </gantt-timeline>
         </div>
       </div>

@@ -45,12 +45,17 @@ export class PortefeuilleService {
 
   /** Ajoute un projet existant a un portefeuille */
   addProject(portefeuilleId: number, projectId: number): Observable<PortefeuilleDTO> {
-    return this.http.post<PortefeuilleDTO>(`${this.baseUrl}/${portefeuilleId}/projects/${projectId}`, {});
+    return this.http.post<PortefeuilleDTO>(
+      `${this.baseUrl}/${portefeuilleId}/projects/${projectId}`,
+      {},
+    );
   }
 
   /** Retire un projet d'un portefeuille */
   removeProject(portefeuilleId: number, projectId: number): Observable<PortefeuilleDTO> {
-    return this.http.delete<PortefeuilleDTO>(`${this.baseUrl}/${portefeuilleId}/projects/${projectId}`);
+    return this.http.delete<PortefeuilleDTO>(
+      `${this.baseUrl}/${portefeuilleId}/projects/${projectId}`,
+    );
   }
 
   /** Recupere les projets qui ne sont assignes a aucun portefeuille */

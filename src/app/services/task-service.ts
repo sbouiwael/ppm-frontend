@@ -59,7 +59,10 @@ export class TaskService {
    * Seuls status, progress et actualWorkHours sont modifiables via cet endpoint.
    * Appelle PATCH /api/tasks/{id}/operational.
    */
-  patchOperational(id: number, payload: { status?: string; progress?: number; actualWorkHours?: number | null }): Observable<TaskDTO> {
+  patchOperational(
+    id: number,
+    payload: { status?: string; progress?: number; actualWorkHours?: number | null },
+  ): Observable<TaskDTO> {
     return this.http.patch<TaskDTO>(`${this.baseUrl}/${id}/operational`, payload);
   }
 }

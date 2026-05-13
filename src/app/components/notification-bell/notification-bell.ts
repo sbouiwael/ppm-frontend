@@ -108,25 +108,30 @@ export class NotificationBell implements OnInit, OnDestroy {
   private startPolling(): void {
     // No startWith(0) — fetchCount() already handles the initial load on ngOnInit.
     // Polling fires every 30s as a fallback when SSE is not connected.
-    interval(30_000).pipe(
-      switchMap(() => this.notificationService.getUnreadCount()),
-      takeUntil(this.destroy$),
-    ).subscribe({
-      next: (count) => {
-        // Ne remplace le badge que si SSE n'est pas actif
-        // (évite un flash de la valeur précédente entre deux events SSE)
-        if (!this.sseConnected) {
-          this.unreadCount = count ?? 0;
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => {}, // silencieux — ne doit pas casser la navbar
-    });
+    interval(30_000)
+      .pipe(
+        switchMap(() => this.notificationService.getUnreadCount()),
+        takeUntil(this.destroy$),
+      )
+      .subscribe({
+        next: (count) => {
+          // Ne remplace le badge que si SSE n'est pas actif
+          // (évite un flash de la valeur précédente entre deux events SSE)
+          if (!this.sseConnected) {
+            this.unreadCount = count ?? 0;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {}, // silencieux — ne doit pas casser la navbar
+      });
   }
 
   private fetchCount(): void {
     this.notificationService.getUnreadCount().subscribe({
-      next: (count) => { this.unreadCount = count ?? 0; this.cdr.detectChanges(); },
+      next: (count) => {
+        this.unreadCount = count ?? 0;
+        this.cdr.detectChanges();
+      },
       error: () => {},
     });
   }

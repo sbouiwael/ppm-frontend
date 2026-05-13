@@ -45,7 +45,7 @@ export class TaskCreate implements OnInit, OnDestroy, HasUnsavedChanges {
     private projectService: ProjectService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       projectId: [null, [Validators.required, Validators.min(1)]],
@@ -75,24 +75,28 @@ export class TaskCreate implements OnInit, OnDestroy, HasUnsavedChanges {
   ngOnInit(): void {
     const qp = this.route.snapshot.queryParamMap;
     const presetProjectId = Number(qp.get('projectId'));
-    const presetParentId  = Number(qp.get('parentTaskId'));
+    const presetParentId = Number(qp.get('parentTaskId'));
 
     this.projectService.getAllProjects().subscribe({
       next: (data) => {
-        this.projects = (data ?? []).filter(p => p.active !== false);
+        this.projects = (data ?? []).filter((p) => p.active !== false);
         if (presetProjectId > 0) {
           this.form.patchValue({ projectId: presetProjectId });
           // valueChanges will fire loadParentTasks; set parentTaskId after tasks load
         }
         this.cdr.detectChanges();
       },
-      error: (err) => { console.error(err); this.cdr.detectChanges(); },
+      error: (err) => {
+        console.error(err);
+        this.cdr.detectChanges();
+      },
     });
 
     // Reload parent tasks whenever the selected project changes
-    this.form.get('projectId')!.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(pid => {
+    this.form
+      .get('projectId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((pid) => {
         this.form.patchValue({ parentTaskId: null }, { emitEvent: false });
         this.parentTasks = [];
         if (pid) this.loadParentTasks(pid, presetParentId > 0 ? presetParentId : undefined);
@@ -108,13 +112,16 @@ export class TaskCreate implements OnInit, OnDestroy, HasUnsavedChanges {
   private loadParentTasks(projectId: number, presetParentId?: number): void {
     this.taskService.getTasksByProject(projectId).subscribe({
       next: (tasks) => {
-        this.parentTasks = (tasks ?? []).filter(t => t.active !== false);
+        this.parentTasks = (tasks ?? []).filter((t) => t.active !== false);
         if (presetParentId && presetParentId > 0) {
           this.form.patchValue({ parentTaskId: presetParentId }, { emitEvent: false });
         }
         this.cdr.detectChanges();
       },
-      error: (err) => { console.error('Failed to load parent tasks', err); this.cdr.detectChanges(); },
+      error: (err) => {
+        console.error('Failed to load parent tasks', err);
+        this.cdr.detectChanges();
+      },
     });
   }
 
@@ -145,8 +152,12 @@ export class TaskCreate implements OnInit, OnDestroy, HasUnsavedChanges {
       wbsNumber: v.wbsNumber ? String(v.wbsNumber).trim() : null,
       mode: v.mode ? String(v.mode).trim() : 'TASK',
 
-      durationDays: v.durationDays !== null && v.durationDays !== undefined ? Number(v.durationDays) : 1.0,
-      workHours: v.workHours !== null && v.workHours !== undefined && v.workHours !== '' ? Number(v.workHours) : null,
+      durationDays:
+        v.durationDays !== null && v.durationDays !== undefined ? Number(v.durationDays) : 1.0,
+      workHours:
+        v.workHours !== null && v.workHours !== undefined && v.workHours !== ''
+          ? Number(v.workHours)
+          : null,
       sortOrder: v.sortOrder !== null && v.sortOrder !== undefined ? Number(v.sortOrder) : 0,
 
       startDate: v.startDate ? v.startDate : null,
@@ -159,7 +170,10 @@ export class TaskCreate implements OnInit, OnDestroy, HasUnsavedChanges {
     };
 
     this.taskService.createTask(payload).subscribe({
-      next: () => { this.savedSuccessfully = true; this.router.navigate(['/tasks'], { queryParams: { projectId: v.projectId } }); },
+      next: () => {
+        this.savedSuccessfully = true;
+        this.router.navigate(['/tasks'], { queryParams: { projectId: v.projectId } });
+      },
       error: (err) => {
         console.error(err);
         this.loading = false;

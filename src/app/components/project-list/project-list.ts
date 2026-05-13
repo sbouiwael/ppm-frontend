@@ -10,7 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 
 import { ProjectService } from '../../services/project-service';
 import { AuthService } from '../../services/auth-service';
@@ -65,11 +65,13 @@ export class ProjectList implements OnInit, OnDestroy {
     private projectService: ProjectService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    public auth: AuthService
+    public auth: AuthService,
   ) {}
 
   /** Indique si l'utilisateur a les droits d'ecriture (creation/edition/suppression) */
-  get canWrite(): boolean { return this.auth.hasRole('ADMIN','PMO','PM'); }
+  get canWrite(): boolean {
+    return this.auth.hasRole('ADMIN', 'PMO', 'PM');
+  }
 
   /** Initialisation : charge la liste des projets */
   ngOnInit(): void {
@@ -88,32 +90,42 @@ export class ProjectList implements OnInit, OnDestroy {
     // Search across all fields
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase().trim();
-      result = result.filter(p =>
-        (p.name?.toLowerCase().includes(term)) ||
-        (p.description?.toLowerCase().includes(term)) ||
-        (p.startDate?.includes(term)) ||
-        (p.endDate?.includes(term)) ||
-        (p.portfolioName?.toLowerCase().includes(term)) ||
-        (p.programName?.toLowerCase().includes(term)) ||
-        (p.objective?.toLowerCase().includes(term)) ||
-        (p.projectManagerName?.toLowerCase().includes(term)) ||
-        (p.progress?.toString().includes(term)) ||
-        (p.active ? 'active' : 'inactive').includes(term)
+      result = result.filter(
+        (p) =>
+          p.name?.toLowerCase().includes(term) ||
+          p.description?.toLowerCase().includes(term) ||
+          p.startDate?.includes(term) ||
+          p.endDate?.includes(term) ||
+          p.portfolioName?.toLowerCase().includes(term) ||
+          p.programName?.toLowerCase().includes(term) ||
+          p.objective?.toLowerCase().includes(term) ||
+          p.projectManagerName?.toLowerCase().includes(term) ||
+          p.progress?.toString().includes(term) ||
+          (p.active ? 'active' : 'inactive').includes(term),
       );
     }
 
     // Sort
     result = [...result].sort((a, b) => {
       switch (this.sortBy) {
-        case 'name-asc': return (a.name || '').localeCompare(b.name || '');
-        case 'name-desc': return (b.name || '').localeCompare(a.name || '');
-        case 'startDate-asc': return (a.startDate || '').localeCompare(b.startDate || '');
-        case 'startDate-desc': return (b.startDate || '').localeCompare(a.startDate || '');
-        case 'progress-asc': return (a.progress ?? 0) - (b.progress ?? 0);
-        case 'progress-desc': return (b.progress ?? 0) - (a.progress ?? 0);
-        case 'active-first': return (b.active ? 1 : 0) - (a.active ? 1 : 0);
-        case 'inactive-first': return (a.active ? 1 : 0) - (b.active ? 1 : 0);
-        default: return 0;
+        case 'name-asc':
+          return (a.name || '').localeCompare(b.name || '');
+        case 'name-desc':
+          return (b.name || '').localeCompare(a.name || '');
+        case 'startDate-asc':
+          return (a.startDate || '').localeCompare(b.startDate || '');
+        case 'startDate-desc':
+          return (b.startDate || '').localeCompare(a.startDate || '');
+        case 'progress-asc':
+          return (a.progress ?? 0) - (b.progress ?? 0);
+        case 'progress-desc':
+          return (b.progress ?? 0) - (a.progress ?? 0);
+        case 'active-first':
+          return (b.active ? 1 : 0) - (a.active ? 1 : 0);
+        case 'inactive-first':
+          return (a.active ? 1 : 0) - (b.active ? 1 : 0);
+        default:
+          return 0;
       }
     });
 
@@ -143,23 +155,26 @@ export class ProjectList implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.projects = [];
 
-    this.projectService.getAllProjects().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (data) => {
-        this.projects = Array.isArray(data) ? data : [];
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.loading = false;
-        this.projects = [];
-        this.errorMessage =
-          err?.error?.message
-          || (typeof err?.error === 'string' ? err.error : null)
-          || `Error ${err.status}: failed to load projects`;
-        console.error('Error fetching projects:', err);
-        this.cdr.detectChanges();
-      },
-    });
+    this.projectService
+      .getAllProjects()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.projects = Array.isArray(data) ? data : [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.loading = false;
+          this.projects = [];
+          this.errorMessage =
+            err?.error?.message ||
+            (typeof err?.error === 'string' ? err.error : null) ||
+            `Error ${err.status}: failed to load projects`;
+          console.error('Error fetching projects:', err);
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   /** Active ou desactive un projet directement depuis la liste */
@@ -258,13 +273,27 @@ export class ProjectList implements OnInit, OnDestroy {
 
           const name = get(['nom', 'name']);
           const startDateRaw = get(['date début', 'date debut', 'start date', 'startdate']);
-          const projectManagerIdRaw = get(['manager id', 'managerid', 'project manager id', 'projectmanagerid']);
+          const projectManagerIdRaw = get([
+            'manager id',
+            'managerid',
+            'project manager id',
+            'projectmanagerid',
+          ]);
 
-          if (!name) { errors.push(`Row ${rowNum}: missing "Name"`); return; }
-          if (!startDateRaw) { errors.push(`Row ${rowNum}: missing "Start Date"`); return; }
+          if (!name) {
+            errors.push(`Row ${rowNum}: missing "Name"`);
+            return;
+          }
+          if (!startDateRaw) {
+            errors.push(`Row ${rowNum}: missing "Start Date"`);
+            return;
+          }
 
           const startDate = this.parseDate(startDateRaw);
-          if (!startDate) { errors.push(`Row ${rowNum}: invalid start date "${startDateRaw}"`); return; }
+          if (!startDate) {
+            errors.push(`Row ${rowNum}: invalid start date "${startDateRaw}"`);
+            return;
+          }
 
           const endDateRaw = get(['date fin', 'end date', 'enddate']);
           const endDate = endDateRaw ? this.parseDate(endDateRaw) : null;
@@ -272,13 +301,18 @@ export class ProjectList implements OnInit, OnDestroy {
           const progress = progressRaw != null ? Number(progressRaw) : null;
 
           requests.push({
-            name: String(name), startDate,
+            name: String(name),
+            startDate,
             projectManagerId: projectManagerIdRaw ? Number(projectManagerIdRaw) : 1,
             description: get(['description']) ? String(get(['description'])) : null,
             endDate: endDate || null,
             portfolioName: get(['portfolio']) ? String(get(['portfolio'])) : null,
-            programName: get(['programme', 'program']) ? String(get(['programme', 'program'])) : null,
-            objective: get(['objectif', 'objective']) ? String(get(['objectif', 'objective'])) : null,
+            programName: get(['programme', 'program'])
+              ? String(get(['programme', 'program']))
+              : null,
+            objective: get(['objectif', 'objective'])
+              ? String(get(['objectif', 'objective']))
+              : null,
             progress: progress != null && !isNaN(progress) ? progress : null,
           });
         });
@@ -290,20 +324,28 @@ export class ProjectList implements OnInit, OnDestroy {
           return;
         }
 
-        forkJoin(requests.map(r => this.projectService.createProject(r))).pipe(takeUntil(this.destroy$)).subscribe({
-          next: (results) => {
-            this.importing = false;
-            const msg = `Successfully imported ${results.length} project(s).`;
-            this.importSuccess = errors.length ? `${msg} ${errors.length} row(s) skipped:\n${errors.join('\n')}` : msg;
-            this.loadProjects();
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.importing = false;
-            this.importError = 'Error creating projects: ' + (typeof err.error === 'string' ? err.error : JSON.stringify(err.error ?? err.message));
-            this.cdr.detectChanges();
-          },
-        });
+        forkJoin(requests.map((r) => this.projectService.createProject(r)))
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: (results) => {
+              this.importing = false;
+              const msg = `Successfully imported ${results.length} project(s).`;
+              this.importSuccess = errors.length
+                ? `${msg} ${errors.length} row(s) skipped:\n${errors.join('\n')}`
+                : msg;
+              this.loadProjects();
+              this.cdr.detectChanges();
+            },
+            error: (err) => {
+              this.importing = false;
+              this.importError =
+                'Error creating projects: ' +
+                (typeof err.error === 'string'
+                  ? err.error
+                  : JSON.stringify(err.error ?? err.message));
+              this.cdr.detectChanges();
+            },
+          });
       } catch (ex: any) {
         this.importing = false;
         this.importError = 'Failed to parse Excel file: ' + (ex.message || ex);
@@ -319,7 +361,7 @@ export class ProjectList implements OnInit, OnDestroy {
   private findColumn(row: Record<string, any>, keys: string[]): any {
     const rowKeys = Object.keys(row);
     for (const key of keys) {
-      const match = rowKeys.find(k => k.toLowerCase().trim() === key);
+      const match = rowKeys.find((k) => k.toLowerCase().trim() === key);
       if (match !== undefined) return row[match];
     }
     return undefined;
@@ -327,9 +369,13 @@ export class ProjectList implements OnInit, OnDestroy {
 
   /** Parse une valeur de date (nombre Excel, Date ou chaine) en format YYYY-MM-DD */
   private parseDate(value: any): string | null {
-    if (typeof value === 'number') return this.formatDate(new Date(Math.round((value - 25569) * 86400 * 1000)));
+    if (typeof value === 'number')
+      return this.formatDate(new Date(Math.round((value - 25569) * 86400 * 1000)));
     if (value instanceof Date) return this.formatDate(value);
-    if (typeof value === 'string') { const d = new Date(value); if (!isNaN(d.getTime())) return this.formatDate(d); }
+    if (typeof value === 'string') {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) return this.formatDate(d);
+    }
     return null;
   }
 

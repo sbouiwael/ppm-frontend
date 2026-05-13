@@ -51,7 +51,7 @@ export class ProjectCreate implements OnInit, OnDestroy, HasUnsavedChanges {
     private calendarService: CalendarService,
     private router: Router,
     private route: ActivatedRoute,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -74,7 +74,9 @@ export class ProjectCreate implements OnInit, OnDestroy, HasUnsavedChanges {
   ngOnInit(): void {
     // Lit les queryParams de contexte avant de charger les donnees de reference
     const qp = this.route.snapshot.queryParamMap;
-    const prefillPortefeuilleId = qp.get('portefeuilleId') ? Number(qp.get('portefeuilleId')) : null;
+    const prefillPortefeuilleId = qp.get('portefeuilleId')
+      ? Number(qp.get('portefeuilleId'))
+      : null;
     const returnTo = qp.get('returnTo');
     if (returnTo) {
       this.returnToUrl = returnTo;
@@ -84,24 +86,29 @@ export class ProjectCreate implements OnInit, OnDestroy, HasUnsavedChanges {
       users: this.userService.getAllUsers(),
       portefeuilles: this.portefeuilleService.getAll(),
       calendars: this.calendarService.getAll(),
-    }).pipe(takeUntil(this.destroy$)).subscribe({
-      next: ({ users, portefeuilles, calendars }) => {
-        this.users = (users ?? []).filter(u => u.active !== false);
-        this.portefeuilles = portefeuilles ?? [];
-        this.calendars = calendars ?? [];
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ users, portefeuilles, calendars }) => {
+          this.users = (users ?? []).filter((u) => u.active !== false);
+          this.portefeuilles = portefeuilles ?? [];
+          this.calendars = calendars ?? [];
 
-        // Pre-selectionne le portefeuille si fourni en queryParam
-        if (prefillPortefeuilleId && this.portefeuilles.some(pf => pf.id === prefillPortefeuilleId)) {
-          this.form.patchValue({ portefeuilleId: prefillPortefeuilleId });
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMsg = 'Cannot load reference data';
-        this.cdr.detectChanges();
-      },
-    });
+          // Pre-selectionne le portefeuille si fourni en queryParam
+          if (
+            prefillPortefeuilleId &&
+            this.portefeuilles.some((pf) => pf.id === prefillPortefeuilleId)
+          ) {
+            this.form.patchValue({ portefeuilleId: prefillPortefeuilleId });
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMsg = 'Cannot load reference data';
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -124,7 +131,7 @@ export class ProjectCreate implements OnInit, OnDestroy, HasUnsavedChanges {
 
     const v = this.form.value;
     const selectedPfId = v.portefeuilleId ? Number(v.portefeuilleId) : null;
-    const selectedPf = this.portefeuilles.find(pf => pf.id === selectedPfId);
+    const selectedPf = this.portefeuilles.find((pf) => pf.id === selectedPfId);
 
     const payload: CreateProjectRequest = {
       name: String(v.name).trim(),
@@ -159,9 +166,7 @@ export class ProjectCreate implements OnInit, OnDestroy, HasUnsavedChanges {
         console.error(err);
         this.loading = false;
         this.errorMsg =
-          typeof err?.error === 'string'
-            ? err.error
-            : (err?.error?.message ?? 'Create failed');
+          typeof err?.error === 'string' ? err.error : (err?.error?.message ?? 'Create failed');
         this.cdr.detectChanges();
       },
     });

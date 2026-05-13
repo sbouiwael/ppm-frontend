@@ -23,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const token = authService.token;
   if (token) {
     req = req.clone({
-      setHeaders: { Authorization: `Bearer ${token}` }
+      setHeaders: { Authorization: `Bearer ${token}` },
     });
   }
 
@@ -35,6 +35,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       }
       // 403 = role non autorise -> rester connecte, laisser le composant gerer l'erreur
       return throwError(() => error);
-    })
+    }),
   );
 };

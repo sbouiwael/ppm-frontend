@@ -1,54 +1,52 @@
 <div class="dependencies-container">
   <div class="dependency-header">
     <h2>Task Dependencies (Task #{{ taskId }})</h2>
-    <a routerLink="/tasks/{{ taskId }}" class="back-link">
-      ← Back to Task Details
-    </a>
+    <a routerLink="/tasks/{{ taskId }}" class="back-link"> ← Back to Task Details </a>
   </div>
 
   @if (errorMessage) {
     <div class="alert alert-error">{{ errorMessage }}</div>
   }
 
-  @if (auth.hasRole('ADMIN','PMO','PM')) {
-  <div class="dependency-form">
-    <h3>Add Dependency</h3>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="form-group">
-        <label>Other Task *</label>
-        <select formControlName="otherTaskId">
-          <option [ngValue]="null" disabled>-- Select a task --</option>
-          @for (t of siblingTasks; track t.id) {
-            <option [ngValue]="t.id">{{ t.name }} (WBS: {{ t.wbsNumber ?? '-' }})</option>
-          }
-        </select>
-      </div>
+  @if (auth.hasRole('ADMIN', 'PMO', 'PM')) {
+    <div class="dependency-form">
+      <h3>Add Dependency</h3>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="form-group">
+          <label>Other Task *</label>
+          <select formControlName="otherTaskId">
+            <option [ngValue]="null" disabled>-- Select a task --</option>
+            @for (t of siblingTasks; track t.id) {
+              <option [ngValue]="t.id">{{ t.name }} (WBS: {{ t.wbsNumber ?? '-' }})</option>
+            }
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label>Direction *</label>
-        <select formControlName="direction">
-          <option value="PREDECESSOR">Other task blocks this task</option>
-          <option value="SUCCESSOR">This task blocks other task</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label>Direction *</label>
+          <select formControlName="direction">
+            <option value="PREDECESSOR">Other task blocks this task</option>
+            <option value="SUCCESSOR">This task blocks other task</option>
+          </select>
+        </div>
 
-      <div class="form-group">
-        <label>Type *</label>
-        <select formControlName="type">
-          <option value="FS">Finish to Start (FS)</option>
-          <option value="SS">Start to Start (SS)</option>
-          <option value="FF">Finish to Finish (FF)</option>
-          <option value="SF">Start to Finish (SF)</option>
-        </select>
-      </div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select formControlName="type">
+            <option value="FS">Finish to Start (FS)</option>
+            <option value="SS">Start to Start (SS)</option>
+            <option value="FF">Finish to Finish (FF)</option>
+            <option value="SF">Start to Finish (SF)</option>
+          </select>
+        </div>
 
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="loading">
-          {{ loading ? 'Saving...' : 'Create Dependency' }}
-        </button>
-      </div>
-    </form>
-  </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Saving...' : 'Create Dependency' }}
+          </button>
+        </div>
+      </form>
+    </div>
   }
 
   <div class="divider"></div>
@@ -72,8 +70,8 @@
                 </span>
               </div>
             </div>
-            @if (auth.hasRole('ADMIN','PMO','PM')) {
-            <button class="delete-btn" (click)="remove(d)">Delete</button>
+            @if (auth.hasRole('ADMIN', 'PMO', 'PM')) {
+              <button class="delete-btn" (click)="remove(d)">Delete</button>
             }
           </li>
         }
@@ -104,8 +102,8 @@
                 </span>
               </div>
             </div>
-            @if (auth.hasRole('ADMIN','PMO','PM')) {
-            <button class="delete-btn" (click)="remove(d)">Delete</button>
+            @if (auth.hasRole('ADMIN', 'PMO', 'PM')) {
+              <button class="delete-btn" (click)="remove(d)">Delete</button>
             }
           </li>
         }

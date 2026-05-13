@@ -22,12 +22,7 @@ describe('roleGuard', () => {
 
   function setupTestBed() {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        AuthService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
     });
     router = TestBed.inject(Router);
   }

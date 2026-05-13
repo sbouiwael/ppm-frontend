@@ -13,7 +13,7 @@
 .form-input {
   width: 100%;
   padding: 8px 12px;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   font-size: 14px;
   background: #fff;
@@ -60,7 +60,7 @@ textarea.form-input {
   justify-content: space-between;
   align-items: center;
   padding: 10px 14px;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   border-left: 3px solid var(--color-accent, #42b7d4);
   transition: background-color 0.15s;
@@ -118,7 +118,7 @@ textarea.form-input {
 .create-project-form {
   margin-top: 12px;
   padding: 16px;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   background: var(--color-bg, #fafafa);
 }

@@ -1,12 +1,22 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
-  TimelineConfig, BarRect, ArrowPath, GridLine,
-  ROW_HEIGHT, BAR_HEIGHT, MILESTONE_SIZE,
+  TimelineConfig,
+  BarRect,
+  ArrowPath,
+  GridLine,
+  ROW_HEIGHT,
+  BAR_HEIGHT,
+  MILESTONE_SIZE,
 } from './gantt.models';
 import {
-  getStatusColor, getProgressColor, dateToX,
-  getWeekendRanges, generateGridLines, milestonePath, summaryBarPath,
+  getStatusColor,
+  getProgressColor,
+  dateToX,
+  getWeekendRanges,
+  generateGridLines,
+  milestonePath,
+  summaryBarPath,
 } from './gantt.utils';
 
 @Component({
@@ -136,7 +146,7 @@ export class GanttTimeline {
   onPointerMove(event: PointerEvent): void {
     if (!this.dragging || !this.config) return;
     const dx = event.clientX - this.dragStartX;
-    const bar = this.bars.find(b => b.taskId === this.dragTaskId);
+    const bar = this.bars.find((b) => b.taskId === this.dragTaskId);
     if (!bar) return;
 
     if (this.dragType === 'move') {
@@ -144,9 +154,8 @@ export class GanttTimeline {
     } else {
       const newWidth = Math.max(this.config.pixelsPerDay, this.dragOrigWidth + dx);
       bar.width = newWidth;
-      bar.progressWidth = this.dragOrigWidth > 0
-        ? (this.dragOrigProgressWidth / this.dragOrigWidth) * newWidth
-        : 0;
+      bar.progressWidth =
+        this.dragOrigWidth > 0 ? (this.dragOrigProgressWidth / this.dragOrigWidth) * newWidth : 0;
     }
   }
 
@@ -164,7 +173,7 @@ export class GanttTimeline {
       this.barResizeEnd.emit({ taskId: this.dragTaskId, newDurationDays: newDays });
     } else {
       // No movement — revert
-      const bar = this.bars.find(b => b.taskId === this.dragTaskId);
+      const bar = this.bars.find((b) => b.taskId === this.dragTaskId);
       if (bar) {
         bar.x = this.dragOrigX;
         bar.width = this.dragOrigWidth;

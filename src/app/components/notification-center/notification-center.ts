@@ -46,7 +46,8 @@ export class NotificationCenter implements OnInit, OnDestroy {
     this.loading = true;
     this.errorMessage = '';
 
-    this.notifService.getMyNotifications()
+    this.notifService
+      .getMyNotifications()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -64,13 +65,13 @@ export class NotificationCenter implements OnInit, OnDestroy {
 
   get displayed(): NotificationDTO[] {
     if (this.activeTab === 'unread') {
-      return this.notifications.filter(n => !n.read);
+      return this.notifications.filter((n) => !n.read);
     }
     return this.notifications;
   }
 
   get unreadCount(): number {
-    return this.notifications.filter(n => !n.read).length;
+    return this.notifications.filter((n) => !n.read).length;
   }
 
   setTab(tab: FilterTab): void {
@@ -79,7 +80,8 @@ export class NotificationCenter implements OnInit, OnDestroy {
 
   markAsRead(notif: NotificationDTO): void {
     if (notif.read) return;
-    this.notifService.markAsRead(notif.id)
+    this.notifService
+      .markAsRead(notif.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -95,11 +97,12 @@ export class NotificationCenter implements OnInit, OnDestroy {
 
   markAllAsRead(): void {
     if (this.unreadCount === 0) return;
-    this.notifService.markAllAsRead()
+    this.notifService
+      .markAllAsRead()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.notifications.forEach(n => (n.read = true));
+          this.notifications.forEach((n) => (n.read = true));
           this.showSuccess('All notifications marked as read.');
           this.cdr.detectChanges();
         },
@@ -111,11 +114,12 @@ export class NotificationCenter implements OnInit, OnDestroy {
   }
 
   deleteNotif(notif: NotificationDTO): void {
-    this.notifService.delete(notif.id)
+    this.notifService
+      .delete(notif.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.notifications = this.notifications.filter(n => n.id !== notif.id);
+          this.notifications = this.notifications.filter((n) => n.id !== notif.id);
           this.cdr.detectChanges();
         },
         error: () => {
@@ -128,35 +132,52 @@ export class NotificationCenter implements OnInit, OnDestroy {
   /** Icone SVG selon le type de notification */
   typeIcon(type: NotificationType): string {
     switch (type) {
-      case 'TASK_ASSIGNED':        return 'assign';
-      case 'DEADLINE_APPROACHING': return 'clock';
-      case 'TASK_OVERDUE':         return 'alert';
-      case 'OVERLOAD_WARNING':     return 'alert';
-      case 'PROJECT_UPDATE':       return 'folder';
-      case 'DEPENDENCY_BLOCKED':   return 'block';
-      default:                     return 'bell';
+      case 'TASK_ASSIGNED':
+        return 'assign';
+      case 'DEADLINE_APPROACHING':
+        return 'clock';
+      case 'TASK_OVERDUE':
+        return 'alert';
+      case 'OVERLOAD_WARNING':
+        return 'alert';
+      case 'PROJECT_UPDATE':
+        return 'folder';
+      case 'DEPENDENCY_BLOCKED':
+        return 'block';
+      default:
+        return 'bell';
     }
   }
 
   /** Classe CSS du chip de type */
   typeBadgeClass(type: NotificationType): string {
     switch (type) {
-      case 'TASK_ASSIGNED':        return 'type-assigned';
-      case 'DEADLINE_APPROACHING': return 'type-warning';
-      case 'TASK_OVERDUE':         return 'type-error';
-      case 'OVERLOAD_WARNING':     return 'type-warning';
-      case 'PROJECT_UPDATE':       return 'type-info';
-      case 'DEPENDENCY_BLOCKED':   return 'type-error';
-      default:                     return 'type-info';
+      case 'TASK_ASSIGNED':
+        return 'type-assigned';
+      case 'DEADLINE_APPROACHING':
+        return 'type-warning';
+      case 'TASK_OVERDUE':
+        return 'type-error';
+      case 'OVERLOAD_WARNING':
+        return 'type-warning';
+      case 'PROJECT_UPDATE':
+        return 'type-info';
+      case 'DEPENDENCY_BLOCKED':
+        return 'type-error';
+      default:
+        return 'type-info';
     }
   }
 
   /** Libelle lisible du type */
   typeLabel(type: NotificationType): string {
     const labels: Record<NotificationType, string> = {
-      TASK_ASSIGNED: 'Assignment', DEADLINE_APPROACHING: 'Deadline',
-      TASK_OVERDUE: 'Overdue', OVERLOAD_WARNING: 'Overload',
-      PROJECT_UPDATE: 'Project', DEPENDENCY_BLOCKED: 'Blocked',
+      TASK_ASSIGNED: 'Assignment',
+      DEADLINE_APPROACHING: 'Deadline',
+      TASK_OVERDUE: 'Overdue',
+      OVERLOAD_WARNING: 'Overload',
+      PROJECT_UPDATE: 'Project',
+      DEPENDENCY_BLOCKED: 'Blocked',
     };
     return labels[type] ?? type;
   }
@@ -166,17 +187,24 @@ export class NotificationCenter implements OnInit, OnDestroy {
     if (!ts) return '';
     const diff = Date.now() - new Date(ts).getTime();
     const mins = Math.floor(diff / 60_000);
-    if (mins < 1)   return 'just now';
-    if (mins < 60)  return `${mins}m ago`;
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins}m ago`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24)   return `${hrs}h ago`;
+    if (hrs < 24) return `${hrs}h ago`;
     const days = Math.floor(hrs / 24);
-    if (days < 7)   return `${days}d ago`;
-    return new Date(ts).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    if (days < 7) return `${days}d ago`;
+    return new Date(ts).toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
   }
 
   private showSuccess(msg: string): void {
     this.successMessage = msg;
-    setTimeout(() => { this.successMessage = ''; this.cdr.detectChanges(); }, 3000);
+    setTimeout(() => {
+      this.successMessage = '';
+      this.cdr.detectChanges();
+    }, 3000);
   }
 }

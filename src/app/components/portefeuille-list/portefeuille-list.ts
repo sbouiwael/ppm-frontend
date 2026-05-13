@@ -63,11 +63,13 @@ export class PortefeuilleList implements OnInit {
     private portefeuilleService: PortefeuilleService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    public auth: AuthService
+    public auth: AuthService,
   ) {}
 
   /** Indique si l'utilisateur a les droits d'ecriture */
-  get canWrite(): boolean { return this.auth.hasRole('ADMIN','PMO'); }
+  get canWrite(): boolean {
+    return this.auth.hasRole('ADMIN', 'PMO');
+  }
 
   /** Initialisation : charge la liste des portefeuilles */
   ngOnInit(): void {
@@ -80,20 +82,26 @@ export class PortefeuilleList implements OnInit {
 
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase().trim();
-      result = result.filter(pf =>
-        (pf.nom?.toLowerCase().includes(term)) ||
-        (pf.description?.toLowerCase().includes(term)) ||
-        (pf.projects.length.toString().includes(term))
+      result = result.filter(
+        (pf) =>
+          pf.nom?.toLowerCase().includes(term) ||
+          pf.description?.toLowerCase().includes(term) ||
+          pf.projects.length.toString().includes(term),
       );
     }
 
     result = [...result].sort((a, b) => {
       switch (this.sortBy) {
-        case 'name-asc': return (a.nom || '').localeCompare(b.nom || '');
-        case 'name-desc': return (b.nom || '').localeCompare(a.nom || '');
-        case 'projects-desc': return b.projects.length - a.projects.length;
-        case 'projects-asc': return a.projects.length - b.projects.length;
-        default: return 0;
+        case 'name-asc':
+          return (a.nom || '').localeCompare(b.nom || '');
+        case 'name-desc':
+          return (b.nom || '').localeCompare(a.nom || '');
+        case 'projects-desc':
+          return b.projects.length - a.projects.length;
+        case 'projects-asc':
+          return a.projects.length - b.projects.length;
+        default:
+          return 0;
       }
     });
 
@@ -130,9 +138,9 @@ export class PortefeuilleList implements OnInit {
         this.loading = false;
         this.portefeuilles = [];
         this.errorMessage =
-          err?.error?.message
-          || (typeof err?.error === 'string' ? err.error : null)
-          || `Error ${err.status}: failed to load portfolios`;
+          err?.error?.message ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          `Error ${err.status}: failed to load portfolios`;
         this.cdr.detectChanges();
       },
     });

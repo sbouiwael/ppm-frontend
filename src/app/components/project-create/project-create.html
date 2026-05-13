@@ -8,7 +8,6 @@
 
   <div class="card">
     <form [formGroup]="form" (ngSubmit)="submit()">
-
       <!-- BASIC INFO -->
       <div class="form-group">
         <label>Project Name *</label>
@@ -61,7 +60,7 @@
 
       <!-- OPTIONAL SECTION -->
       <div class="divider"></div>
-      <h3 style="margin-top:16px;">Optional Information</h3>
+      <h3 style="margin-top: 16px">Optional Information</h3>
 
       <!-- Portfolio / Program -->
       <div class="grid grid-cols-2">
@@ -117,7 +116,10 @@
       <div class="form-group">
         <label>Progress (%)</label>
         <input type="number" formControlName="progress" min="0" max="100" placeholder="0-100" />
-        @if (form.get('progress')?.touched && form.get('progress')?.errors?.['min'] || form.get('progress')?.errors?.['max']) {
+        @if (
+          (form.get('progress')?.touched && form.get('progress')?.errors?.['min']) ||
+          form.get('progress')?.errors?.['max']
+        ) {
           <div class="form-error">Progress must be between 0 and 100.</div>
         }
       </div>
@@ -132,7 +134,6 @@
         </button>
         <a [routerLink]="returnToUrl" class="btn btn-outline">Cancel</a>
       </div>
-
     </form>
   </div>
 </div>

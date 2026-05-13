@@ -56,7 +56,7 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
     private route: ActivatedRoute,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    public auth: AuthService
+    public auth: AuthService,
   ) {
     this.form = this.fb.group({
       projectId: [null, [Validators.required, Validators.min(1)]],
@@ -81,9 +81,10 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
     this.taskId = Number(this.route.snapshot.paramMap.get('id'));
 
     // Watch project changes to reload parent task options
-    this.form.get('projectId')!.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(pid => {
+    this.form
+      .get('projectId')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((pid) => {
         this.form.patchValue({ parentTaskId: null }, { emitEvent: false });
         this.parentTasks = [];
         if (pid) this.loadParentTasks(pid);
@@ -94,7 +95,7 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
       task: this.taskService.getTaskById(this.taskId),
     }).subscribe({
       next: ({ projects, task }) => {
-        this.projects = (projects ?? []).filter(p => p.active !== false);
+        this.projects = (projects ?? []).filter((p) => p.active !== false);
 
         // Render the form + <select> options first
         this.loadingData = false;
@@ -102,22 +103,25 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
 
         // Patch with emitEvent:false to prevent valueChanges from clearing parentTaskId
         // and triggering a redundant loadParentTasks during initial data load.
-        this.form.patchValue({
-          projectId: task.projectId,
-          parentTaskId: task.parentTaskId ?? null,
-          name: task.name,
-          description: task.description ?? '',
-          wbsNumber: task.wbsNumber ?? '',
-          mode: task.mode ?? 'TASK',
-          durationDays: task.durationDays ?? 1.0,
-          workHours: task.workHours ?? null,
-          sortOrder: task.sortOrder ?? 0,
-          startDate: task.startDate ?? '',
-          endDate: task.endDate ?? '',
-          status: task.status ?? 'NOT_STARTED',
-          progress: task.progress ?? 0,
-          active: task.active ?? true,
-        }, { emitEvent: false });
+        this.form.patchValue(
+          {
+            projectId: task.projectId,
+            parentTaskId: task.parentTaskId ?? null,
+            name: task.name,
+            description: task.description ?? '',
+            wbsNumber: task.wbsNumber ?? '',
+            mode: task.mode ?? 'TASK',
+            durationDays: task.durationDays ?? 1.0,
+            workHours: task.workHours ?? null,
+            sortOrder: task.sortOrder ?? 0,
+            startDate: task.startDate ?? '',
+            endDate: task.endDate ?? '',
+            status: task.status ?? 'NOT_STARTED',
+            progress: task.progress ?? 0,
+            active: task.active ?? true,
+          },
+          { emitEvent: false },
+        );
 
         // Load parent tasks AFTER patching so parentTaskId is already set when options arrive
         if (task.projectId) {
@@ -159,8 +163,9 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
   private loadParentTasks(projectId: number, excludeTaskId?: number): void {
     this.taskService.getTasksByProject(projectId).subscribe({
       next: (tasks) => {
-        this.parentTasks = (tasks ?? [])
-          .filter(t => t.active !== false && t.id !== excludeTaskId);
+        this.parentTasks = (tasks ?? []).filter(
+          (t) => t.active !== false && t.id !== excludeTaskId,
+        );
       },
       error: (err) => console.error('Failed to load parent tasks', err),
     });
@@ -193,7 +198,10 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
       };
 
       this.taskService.patchOperational(this.taskId, operationalPayload).subscribe({
-        next: () => { this.savedSuccessfully = true; this.router.navigateByUrl('/tasks'); },
+        next: () => {
+          this.savedSuccessfully = true;
+          this.router.navigateByUrl('/tasks');
+        },
         error: (err) => {
           console.error(err);
           this.loading = false;
@@ -217,8 +225,12 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
       description: rv.description ? String(rv.description).trim() : null,
       wbsNumber: rv.wbsNumber ? String(rv.wbsNumber).trim() : null,
       mode: rv.mode ? String(rv.mode).trim() : 'TASK',
-      durationDays: rv.durationDays !== null && rv.durationDays !== undefined ? Number(rv.durationDays) : 1.0,
-      workHours: rv.workHours !== null && rv.workHours !== undefined && rv.workHours !== '' ? Number(rv.workHours) : null,
+      durationDays:
+        rv.durationDays !== null && rv.durationDays !== undefined ? Number(rv.durationDays) : 1.0,
+      workHours:
+        rv.workHours !== null && rv.workHours !== undefined && rv.workHours !== ''
+          ? Number(rv.workHours)
+          : null,
       sortOrder: rv.sortOrder !== null && rv.sortOrder !== undefined ? Number(rv.sortOrder) : 0,
       startDate: rv.startDate ? rv.startDate : null,
       endDate: rv.endDate ? rv.endDate : null,
@@ -228,7 +240,10 @@ export class TaskEdit implements OnInit, OnDestroy, HasUnsavedChanges {
     };
 
     this.taskService.updateTask(this.taskId, payload).subscribe({
-      next: () => { this.savedSuccessfully = true; this.router.navigateByUrl('/tasks'); },
+      next: () => {
+        this.savedSuccessfully = true;
+        this.router.navigateByUrl('/tasks');
+      },
       error: (err) => {
         console.error(err);
         this.loading = false;

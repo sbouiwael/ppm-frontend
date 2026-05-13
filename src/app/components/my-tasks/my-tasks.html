@@ -7,7 +7,9 @@
     </div>
     <div class="page-header-right">
       @if (!loading) {
-        <span class="task-count-badge">{{ filteredTasks.length }} / {{ allTasks.length }} tasks</span>
+        <span class="task-count-badge"
+          >{{ filteredTasks.length }} / {{ allTasks.length }} tasks</span
+        >
       }
     </div>
   </div>
@@ -15,7 +17,6 @@
   <!-- Filters Bar -->
   <div class="filters-card card">
     <div class="filters-row">
-
       <!-- Status filter -->
       <div class="filter-group">
         <label class="filter-label">Status</label>
@@ -75,7 +76,6 @@
     <div class="tasks-grid">
       @for (task of filteredTasks; track task.taskId) {
         <div [class]="getTaskCardClass(task)">
-
           <!-- Card header: task name + status badge -->
           <div class="task-card-header">
             <div class="task-name-row">
@@ -111,9 +111,18 @@
 
           <!-- Project link -->
           <div class="task-project-row">
-            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24"
-                 fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="13"
+              height="13"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+              />
             </svg>
             <a [routerLink]="['/projects', task.projectId]" class="project-link">
               {{ task.projectName }}
@@ -127,10 +136,12 @@
               <span class="progress-pct">{{ task.taskProgress }}%</span>
             </div>
             <div class="progress-bar">
-              <div class="progress-fill" [style.width.%]="task.taskProgress"
-                   [class.progress-fill--done]="task.taskStatus === 'DONE'"
-                   [class.progress-fill--blocked]="task.taskStatus === 'BLOCKED'">
-              </div>
+              <div
+                class="progress-fill"
+                [style.width.%]="task.taskProgress"
+                [class.progress-fill--done]="task.taskStatus === 'DONE'"
+                [class.progress-fill--blocked]="task.taskStatus === 'BLOCKED'"
+              ></div>
             </div>
           </div>
 
@@ -139,13 +150,13 @@
             @if (task.startDate) {
               <div class="meta-item">
                 <span class="meta-label">Start</span>
-                <span class="meta-value">{{ task.startDate | date:'mediumDate' }}</span>
+                <span class="meta-value">{{ task.startDate | date: 'mediumDate' }}</span>
               </div>
             }
             @if (task.endDate) {
               <div class="meta-item" [class.meta-item--overdue]="isOverdue(task)">
                 <span class="meta-label">Due</span>
-                <span class="meta-value">{{ task.endDate | date:'mediumDate' }}</span>
+                <span class="meta-value">{{ task.endDate | date: 'mediumDate' }}</span>
               </div>
             }
             @if (task.assignedHours) {
@@ -169,7 +180,8 @@
               <button
                 [class]="action.css"
                 [disabled]="updatingTaskIds.has(task.taskId)"
-                (click)="applyQuickAction(task, action.status)">
+                (click)="applyQuickAction(task, action.status)"
+              >
                 @if (updatingTaskIds.has(task.taskId)) {
                   <span class="btn-spinner"></span>
                 } @else {
@@ -202,10 +214,17 @@
   @if (!loading && !errorMessage && allTasks.length === 0) {
     <div class="empty-state card text-center">
       <div class="empty-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
-             fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M9 11l3 3L22 4"/>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="48"
+          height="48"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <path d="M9 11l3 3L22 4" />
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
         </svg>
       </div>
       <h3 class="text-primary">No tasks assigned yet</h3>

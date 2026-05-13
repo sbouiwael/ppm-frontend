@@ -17,11 +17,7 @@ describe('AuditService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        AuditService,
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [AuditService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(AuditService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -43,21 +39,21 @@ describe('AuditService', () => {
 
   it('search() should append entityType param when provided', () => {
     service.search({ entityType: 'PROJECT' }).subscribe();
-    const req = httpMock.expectOne(r => r.url === base);
+    const req = httpMock.expectOne((r) => r.url === base);
     expect(req.request.params.get('entityType')).toBe('PROJECT');
     req.flush({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 });
   });
 
   it('search() should append action param when provided', () => {
     service.search({ action: 'DELETE' }).subscribe();
-    const req = httpMock.expectOne(r => r.url === base);
+    const req = httpMock.expectOne((r) => r.url === base);
     expect(req.request.params.get('action')).toBe('DELETE');
     req.flush({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 });
   });
 
   it('search() should convert date-only from to ISO datetime', () => {
     service.search({ from: '2026-01-01', to: '2026-04-14' }).subscribe();
-    const req = httpMock.expectOne(r => r.url === base);
+    const req = httpMock.expectOne((r) => r.url === base);
     expect(req.request.params.get('from')).toBe('2026-01-01T00:00:00');
     expect(req.request.params.get('to')).toBe('2026-04-14T23:59:59');
     req.flush({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 });
@@ -65,7 +61,7 @@ describe('AuditService', () => {
 
   it('search() should send page as 0-based index', () => {
     service.search({ page: 2 }).subscribe();
-    const req = httpMock.expectOne(r => r.url === base);
+    const req = httpMock.expectOne((r) => r.url === base);
     expect(req.request.params.get('page')).toBe('2');
     req.flush({ content: [], totalElements: 0, totalPages: 0, number: 0, size: 20 });
   });

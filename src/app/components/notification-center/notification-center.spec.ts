@@ -18,16 +18,22 @@ describe('NotificationCenter', () => {
   const now = new Date().toISOString();
 
   const makeNotif = (id: number, read: boolean): NotificationDTO => ({
-    id, recipientId: 1, type: 'TASK_ASSIGNED',
-    title: `Notification ${id}`, message: `Message ${id}`,
-    read, entityType: 'TASK', entityId: id * 10, createdAt: now,
+    id,
+    recipientId: 1,
+    type: 'TASK_ASSIGNED',
+    title: `Notification ${id}`,
+    message: `Message ${id}`,
+    read,
+    entityType: 'TASK',
+    entityId: id * 10,
+    createdAt: now,
   });
 
   const mockService = {
     getMyNotifications: vi.fn().mockReturnValue(of([])),
-    markAsRead:         vi.fn().mockReturnValue(of({})),
-    markAllAsRead:      vi.fn().mockReturnValue(of(undefined)),
-    delete:             vi.fn().mockReturnValue(of(undefined)),
+    markAsRead: vi.fn().mockReturnValue(of({})),
+    markAllAsRead: vi.fn().mockReturnValue(of(undefined)),
+    delete: vi.fn().mockReturnValue(of(undefined)),
   };
 
   beforeEach(async () => {
@@ -36,10 +42,7 @@ describe('NotificationCenter', () => {
 
     await TestBed.configureTestingModule({
       imports: [NotificationCenter],
-      providers: [
-        provideRouter([]),
-        { provide: NotificationService, useValue: mockService },
-      ],
+      providers: [provideRouter([]), { provide: NotificationService, useValue: mockService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NotificationCenter);
@@ -118,7 +121,7 @@ describe('NotificationCenter', () => {
     component.markAllAsRead();
 
     expect(mockService.markAllAsRead).toHaveBeenCalledOnce();
-    expect(component.notifications.every(n => n.read)).toBe(true);
+    expect(component.notifications.every((n) => n.read)).toBe(true);
   });
 
   it('should NOT call markAllAsRead when all are already read', () => {

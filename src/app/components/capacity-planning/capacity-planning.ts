@@ -65,7 +65,7 @@ export class CapacityPlanning implements OnInit, OnDestroy {
   constructor(
     private capacityService: CapacityService,
     private projectService: ProjectService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -84,11 +84,18 @@ export class CapacityPlanning implements OnInit, OnDestroy {
   }
 
   private loadProjects(): void {
-    this.projectService.getAllProjects()
+    this.projectService
+      .getAllProjects()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (projects) => { this.projects = projects.filter(p => p.active !== false); this.cdr.detectChanges(); },
-        error: () => { this.projects = []; this.cdr.detectChanges(); },
+        next: (projects) => {
+          this.projects = projects.filter((p) => p.active !== false);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.projects = [];
+          this.cdr.detectChanges();
+        },
       });
   }
 
@@ -96,10 +103,8 @@ export class CapacityPlanning implements OnInit, OnDestroy {
   loadCapacity(): void {
     this.loading = true;
     this.errorMessage = '';
-    this.capacityService.getCapacityOverview(
-      this.filterRole || undefined,
-      this.selectedProjectId
-    )
+    this.capacityService
+      .getCapacityOverview(this.filterRole || undefined, this.selectedProjectId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -128,7 +133,8 @@ export class CapacityPlanning implements OnInit, OnDestroy {
 
   /** Charge les donnees hebdomadaires */
   loadWeekly(): void {
-    this.capacityService.getWeeklyCapacity(12, this.filterRole || undefined)
+    this.capacityService
+      .getWeeklyCapacity(12, this.filterRole || undefined)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -143,41 +149,49 @@ export class CapacityPlanning implements OnInit, OnDestroy {
   /** Retourne les ressources filtrees par statut (filtre local — pas d'appel API) */
   get filteredResources(): ResourceCapacityDTO[] {
     if (!this.filterStatus) return this.allResources;
-    return this.allResources.filter(r => r.capacityStatus === this.filterStatus);
+    return this.allResources.filter((r) => r.capacityStatus === this.filterStatus);
   }
 
   /** Retourne le nombre de ressources par statut */
   countByStatus(status: string): number {
-    return this.allResources.filter(r => r.capacityStatus === status).length;
+    return this.allResources.filter((r) => r.capacityStatus === status).length;
   }
 
   /** Retourne la classe CSS pour la barre de progression selon l'utilisation */
   getUtilizationBarClass(status: string): string {
     switch (status) {
-      case 'OVERLOADED':    return 'util-bar util-bar--overloaded';
-      case 'BALANCED':      return 'util-bar util-bar--balanced';
-      case 'NO_CAPACITY':   return 'util-bar util-bar--no-capacity';
-      default:              return 'util-bar util-bar--underutilized';
+      case 'OVERLOADED':
+        return 'util-bar util-bar--overloaded';
+      case 'BALANCED':
+        return 'util-bar util-bar--balanced';
+      case 'NO_CAPACITY':
+        return 'util-bar util-bar--no-capacity';
+      default:
+        return 'util-bar util-bar--underutilized';
     }
   }
 
   /** Retourne la classe CSS pour le badge de statut */
   getStatusBadgeClass(status: string): string {
     switch (status) {
-      case 'OVERLOADED':    return 'badge badge-error';
-      case 'BALANCED':      return 'badge badge-success';
-      case 'NO_CAPACITY':   return 'badge badge-warning';
-      default:              return 'badge badge-primary';
+      case 'OVERLOADED':
+        return 'badge badge-error';
+      case 'BALANCED':
+        return 'badge badge-success';
+      case 'NO_CAPACITY':
+        return 'badge badge-warning';
+      default:
+        return 'badge badge-primary';
     }
   }
 
   /** Label lisible pour le statut */
   statusLabel(status: string): string {
     const labels: Record<string, string> = {
-      OVERLOADED:   'Overloaded',
-      BALANCED:     'Balanced',
-      UNDERUTILIZED:'Underutilized',
-      NO_CAPACITY:  'No Capacity',
+      OVERLOADED: 'Overloaded',
+      BALANCED: 'Balanced',
+      UNDERUTILIZED: 'Underutilized',
+      NO_CAPACITY: 'No Capacity',
     };
     return labels[status] ?? status;
   }
@@ -194,10 +208,15 @@ export class CapacityPlanning implements OnInit, OnDestroy {
   /** Classe CSS pour une cellule de la heatmap hebdomadaire */
   weekCellClass(status: string): string {
     switch (status) {
-      case 'OVERLOADED':                          return 'week-cell week-cell--overloaded';
-      case 'BALANCED': case 'NEAR_CAPACITY':      return 'week-cell week-cell--balanced';
-      case 'NO_CAPACITY':                         return 'week-cell week-cell--no-capacity';
-      default:                                    return 'week-cell week-cell--underutilized';
+      case 'OVERLOADED':
+        return 'week-cell week-cell--overloaded';
+      case 'BALANCED':
+      case 'NEAR_CAPACITY':
+        return 'week-cell week-cell--balanced';
+      case 'NO_CAPACITY':
+        return 'week-cell week-cell--no-capacity';
+      default:
+        return 'week-cell week-cell--underutilized';
     }
   }
 

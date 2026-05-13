@@ -8,117 +8,141 @@
     <div class="alert alert-error">{{ errorMessage }}</div>
   }
 
-  @if (auth.hasRole('ADMIN','PMO','PM')) {
-  <div class="card">
-    <div class="card-header">
-      <h3 class="card-title">Assign User to Task</h3>
-    </div>
-
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <div class="grid grid-cols-2">
-        <div class="form-group">
-          <label>User *</label>
-          <select formControlName="userId">
-            <option [ngValue]="null" disabled>-- Select a user --</option>
-            @for (u of users; track u.id) {
-              <option [ngValue]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.role }})</option>
-            }
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Assigned Hours *</label>
-          <input type="number" formControlName="assignedHours" placeholder="0" min="0" />
-        </div>
+  @if (auth.hasRole('ADMIN', 'PMO', 'PM')) {
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Assign User to Task</h3>
       </div>
 
-      <!-- ── Capacity Check Panel ─────────────────────────────────── -->
-      @if (checkingCapacity) {
-        <div class="capacity-checking">
-          <span class="spinner"></span>
-          Checking weekly capacity...
-        </div>
-      }
-
-      @if (capacityError) {
-        <div class="alert alert-warning capacity-alert">{{ capacityError }}</div>
-      }
-
-      @if (capacityCheck && !checkingCapacity) {
-        <div class="capacity-check-panel" [class.capacity-check-panel--overload]="capacityCheck.hasOverload">
-
-          <!-- Global result banner -->
-          <div class="capacity-check-banner" [class.banner--ok]="!capacityCheck.hasOverload"
-               [class.banner--warn]="capacityCheck.hasOverload">
-            <span class="banner-icon">{{ capacityCheck.hasOverload ? '⚠' : '✓' }}</span>
-            <span class="banner-text">{{ capacityCheck.message }}</span>
+      <form [formGroup]="form" (ngSubmit)="submit()">
+        <div class="grid grid-cols-2">
+          <div class="form-group">
+            <label>User *</label>
+            <select formControlName="userId">
+              <option [ngValue]="null" disabled>-- Select a user --</option>
+              @for (u of users; track u.id) {
+                <option [ngValue]="u.id">{{ u.firstName }} {{ u.lastName }} ({{ u.role }})</option>
+              }
+            </select>
           </div>
 
-          <!-- Week-by-week breakdown -->
-          @if (capacityCheck.weeks.length > 0) {
-            <div class="capacity-weeks-title">Week-by-week breakdown for
-              <strong>{{ capacityCheck.userName }}</strong>
-              — Task: <strong>{{ capacityCheck.taskName }}</strong>
+          <div class="form-group">
+            <label>Assigned Hours *</label>
+            <input type="number" formControlName="assignedHours" placeholder="0" min="0" />
+          </div>
+        </div>
+
+        <!-- ── Capacity Check Panel ─────────────────────────────────── -->
+        @if (checkingCapacity) {
+          <div class="capacity-checking">
+            <span class="spinner"></span>
+            Checking weekly capacity...
+          </div>
+        }
+
+        @if (capacityError) {
+          <div class="alert alert-warning capacity-alert">{{ capacityError }}</div>
+        }
+
+        @if (capacityCheck && !checkingCapacity) {
+          <div
+            class="capacity-check-panel"
+            [class.capacity-check-panel--overload]="capacityCheck.hasOverload"
+          >
+            <!-- Global result banner -->
+            <div
+              class="capacity-check-banner"
+              [class.banner--ok]="!capacityCheck.hasOverload"
+              [class.banner--warn]="capacityCheck.hasOverload"
+            >
+              <span class="banner-icon">{{ capacityCheck.hasOverload ? '⚠' : '✓' }}</span>
+              <span class="banner-text">{{ capacityCheck.message }}</span>
             </div>
-            <div class="capacity-weeks">
-              @for (w of capacityCheck.weeks; track w.weekStart) {
-                <div class="check-week" [class]="getCheckStatusClass(w.status)">
-                  <div class="check-week-header">
-                    <span class="check-week-dates">{{ w.weekStart | date:'MMM d' }} – {{ w.weekEnd | date:'MMM d, yyyy' }}</span>
-                    <span class="check-week-status-badge">{{ getCheckStatusLabel(w.status) }}</span>
-                  </div>
-                  <div class="check-week-body">
-                    <div class="check-week-row">
-                      <span class="check-label">Capacity</span>
-                      <span class="check-value">{{ w.weeklyCapacity }}h</span>
+
+            <!-- Week-by-week breakdown -->
+            @if (capacityCheck.weeks.length > 0) {
+              <div class="capacity-weeks-title">
+                Week-by-week breakdown for
+                <strong>{{ capacityCheck.userName }}</strong>
+                — Task: <strong>{{ capacityCheck.taskName }}</strong>
+              </div>
+              <div class="capacity-weeks">
+                @for (w of capacityCheck.weeks; track w.weekStart) {
+                  <div class="check-week" [class]="getCheckStatusClass(w.status)">
+                    <div class="check-week-header">
+                      <span class="check-week-dates"
+                        >{{ w.weekStart | date: 'MMM d' }} –
+                        {{ w.weekEnd | date: 'MMM d, yyyy' }}</span
+                      >
+                      <span class="check-week-status-badge">{{
+                        getCheckStatusLabel(w.status)
+                      }}</span>
                     </div>
-                    <div class="check-week-row">
-                      <span class="check-label">Already assigned</span>
-                      <span class="check-value">{{ w.alreadyAssignedHours | number:'1.0-1' }}h</span>
-                    </div>
-                    <div class="check-week-row check-week-row--new">
-                      <span class="check-label">This task</span>
-                      <span class="check-value">+ {{ w.newTaskHoursForWeek | number:'1.0-1' }}h</span>
-                    </div>
-                    <div class="check-week-row check-week-row--total">
-                      <span class="check-label">After assignment</span>
-                      <span class="check-value" [class.value--overload]="w.overloadHours > 0">
-                        {{ w.projectedAssignedHours | number:'1.0-1' }}h
-                      </span>
-                    </div>
-                    <div class="check-week-row">
-                      <span class="check-label">Available</span>
-                      <span class="check-value" [class.value--overload]="w.availableHoursAfterAssignment < 0">
-                        {{ w.availableHoursAfterAssignment | number:'1.0-1' }}h
-                      </span>
-                    </div>
-                    @if (w.overloadHours > 0) {
-                      <div class="check-week-row check-week-row--overload">
-                        <span class="check-label">Overload</span>
-                        <span class="check-value value--overload">−{{ w.overloadHours | number:'1.0-1' }}h</span>
+                    <div class="check-week-body">
+                      <div class="check-week-row">
+                        <span class="check-label">Capacity</span>
+                        <span class="check-value">{{ w.weeklyCapacity }}h</span>
                       </div>
-                    }
+                      <div class="check-week-row">
+                        <span class="check-label">Already assigned</span>
+                        <span class="check-value"
+                          >{{ w.alreadyAssignedHours | number: '1.0-1' }}h</span
+                        >
+                      </div>
+                      <div class="check-week-row check-week-row--new">
+                        <span class="check-label">This task</span>
+                        <span class="check-value"
+                          >+ {{ w.newTaskHoursForWeek | number: '1.0-1' }}h</span
+                        >
+                      </div>
+                      <div class="check-week-row check-week-row--total">
+                        <span class="check-label">After assignment</span>
+                        <span class="check-value" [class.value--overload]="w.overloadHours > 0">
+                          {{ w.projectedAssignedHours | number: '1.0-1' }}h
+                        </span>
+                      </div>
+                      <div class="check-week-row">
+                        <span class="check-label">Available</span>
+                        <span
+                          class="check-value"
+                          [class.value--overload]="w.availableHoursAfterAssignment < 0"
+                        >
+                          {{ w.availableHoursAfterAssignment | number: '1.0-1' }}h
+                        </span>
+                      </div>
+                      @if (w.overloadHours > 0) {
+                        <div class="check-week-row check-week-row--overload">
+                          <span class="check-label">Overload</span>
+                          <span class="check-value value--overload"
+                            >−{{ w.overloadHours | number: '1.0-1' }}h</span
+                          >
+                        </div>
+                      }
+                    </div>
                   </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <p class="capacity-no-weeks">Task has no scheduled weeks — set start/end dates first.</p>
+                }
+              </div>
+            } @else {
+              <p class="capacity-no-weeks">
+                Task has no scheduled weeks — set start/end dates first.
+              </p>
+            }
+          </div>
+        }
+        <!-- ── End Capacity Check Panel ─────────────────────────────── -->
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            {{ loading ? 'Assigning...' : 'Assign User' }}
+          </button>
+          @if (capacityCheck?.hasOverload) {
+            <span class="overload-warning-inline"
+              >⚠ Overload detected — PM acknowledges and proceeds</span
+            >
           }
         </div>
-      }
-      <!-- ── End Capacity Check Panel ─────────────────────────────── -->
-
-      <div class="form-actions">
-        <button type="submit" class="btn btn-primary" [disabled]="loading">
-          {{ loading ? 'Assigning...' : 'Assign User' }}
-        </button>
-        @if (capacityCheck?.hasOverload) {
-          <span class="overload-warning-inline">⚠ Overload detected — PM acknowledges and proceeds</span>
-        }
-      </div>
-    </form>
-  </div>
+      </form>
+    </div>
   }
 
   <div class="assignments-section">
@@ -131,8 +155,12 @@
             <div class="assignment-info">
               <div class="assignment-user">
                 <svg class="assignment-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
                 <div>
                   <span class="user-label">User</span>
@@ -159,13 +187,16 @@
               </div>
             </div>
 
-            @if (auth.hasRole('ADMIN','PMO','PM')) {
-            <div class="assignment-actions">
-              <button class="btn btn-danger btn-sm" (click)="deactivate(a)"
-                      [disabled]="a.active === false">
-                Deactivate
-              </button>
-            </div>
+            @if (auth.hasRole('ADMIN', 'PMO', 'PM')) {
+              <div class="assignment-actions">
+                <button
+                  class="btn btn-danger btn-sm"
+                  (click)="deactivate(a)"
+                  [disabled]="a.active === false"
+                >
+                  Deactivate
+                </button>
+              </div>
             }
           </div>
         }

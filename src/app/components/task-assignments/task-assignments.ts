@@ -1,6 +1,9 @@
 import {
-  Component, OnInit, OnDestroy,
-  ChangeDetectionStrategy, ChangeDetectorRef
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -47,7 +50,7 @@ export class TaskAssignments implements OnInit, OnDestroy {
     private capacityService: CapacityService,
     private userService: UserService,
     public auth: AuthService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       userId: [null, [Validators.required, Validators.min(1)]],
@@ -75,15 +78,18 @@ export class TaskAssignments implements OnInit, OnDestroy {
     if (!this.auth.hasRole('ADMIN', 'PMO', 'PM')) return;
     this.userService.getAllUsers().subscribe({
       next: (data) => {
-        this.users = (data ?? []).filter(u => u.active !== false);
+        this.users = (data ?? []).filter((u) => u.active !== false);
         this.cdr.markForCheck();
       },
-      error: () => { this.users = []; this.cdr.markForCheck(); },
+      error: () => {
+        this.users = [];
+        this.cdr.markForCheck();
+      },
     });
   }
 
   getUserName(userId: number): string {
-    const user = this.users.find(u => u.id === userId);
+    const user = this.users.find((u) => u.id === userId);
     return user ? `${user.firstName} ${user.lastName}` : `User #${userId}`;
   }
 
@@ -169,19 +175,21 @@ export class TaskAssignments implements OnInit, OnDestroy {
     combineLatest([
       this.form.get('userId')!.valueChanges,
       this.form.get('assignedHours')!.valueChanges,
-    ]).pipe(
-      debounceTime(400),
-      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
-      takeUntil(this.destroy$)
-    ).subscribe(([userId, hours]) => {
-      if (userId && hours != null && hours >= 0) {
-        this.runCapacityCheck(Number(userId), Number(hours));
-      } else {
-        this.capacityCheck = null;
-        this.capacityError = '';
-        this.cdr.markForCheck();
-      }
-    });
+    ])
+      .pipe(
+        debounceTime(400),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(([userId, hours]) => {
+        if (userId && hours != null && hours >= 0) {
+          this.runCapacityCheck(Number(userId), Number(hours));
+        } else {
+          this.capacityCheck = null;
+          this.capacityError = '';
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   runCapacityCheck(userId: number, assignedHours: number): void {
@@ -189,7 +197,8 @@ export class TaskAssignments implements OnInit, OnDestroy {
     this.capacityError = '';
     this.cdr.markForCheck();
 
-    this.capacityService.checkAssignment(userId, this.taskId, assignedHours)
+    this.capacityService
+      .checkAssignment(userId, this.taskId, assignedHours)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -208,19 +217,23 @@ export class TaskAssignments implements OnInit, OnDestroy {
 
   getCheckStatusClass(status: string): string {
     switch (status) {
-      case 'OVERLOADED':    return 'check-week--overloaded';
-      case 'NEAR_CAPACITY': return 'check-week--near';
-      case 'AVAILABLE':     return 'check-week--available';
-      default:              return 'check-week--no-capacity';
+      case 'OVERLOADED':
+        return 'check-week--overloaded';
+      case 'NEAR_CAPACITY':
+        return 'check-week--near';
+      case 'AVAILABLE':
+        return 'check-week--available';
+      default:
+        return 'check-week--no-capacity';
     }
   }
 
   getCheckStatusLabel(status: string): string {
     const map: Record<string, string> = {
-      AVAILABLE:    'Available',
-      NEAR_CAPACITY:'Near Capacity',
-      OVERLOADED:   'Overloaded',
-      NO_CAPACITY:  'No Capacity',
+      AVAILABLE: 'Available',
+      NEAR_CAPACITY: 'Near Capacity',
+      OVERLOADED: 'Overloaded',
+      NO_CAPACITY: 'No Capacity',
     };
     return map[status] ?? status;
   }

@@ -16,16 +16,28 @@ describe('AuditLogList', () => {
   let fixture: ComponentFixture<AuditLogList>;
 
   const makeEntry = (id: number): AuditLogDTO => ({
-    id, actorId: 1, actorEmail: 'admin@biat.com', actorRole: 'ADMIN',
-    action: 'CREATE', entityType: 'PROJECT', entityId: 10,
-    entityName: 'Project Alpha', details: 'Project created',
-    projectId: 10, projectName: 'Project Alpha',
+    id,
+    actorId: 1,
+    actorEmail: 'admin@biat.com',
+    actorRole: 'ADMIN',
+    action: 'CREATE',
+    entityType: 'PROJECT',
+    entityId: 10,
+    entityName: 'Project Alpha',
+    details: 'Project created',
+    projectId: 10,
+    projectName: 'Project Alpha',
     timestamp: '2026-04-14T10:00:00',
   });
 
   const makePage = (entries: AuditLogDTO[], total = 50): PageResponse<AuditLogDTO> => ({
-    content: entries, totalElements: total, totalPages: Math.ceil(total / 20),
-    number: 0, size: 20, first: true, last: false,
+    content: entries,
+    totalElements: total,
+    totalPages: Math.ceil(total / 20),
+    number: 0,
+    size: 20,
+    first: true,
+    last: false,
   });
 
   const mockAuditService = {
@@ -38,10 +50,7 @@ describe('AuditLogList', () => {
 
     await TestBed.configureTestingModule({
       imports: [AuditLogList],
-      providers: [
-        provideRouter([]),
-        { provide: AuditService, useValue: mockAuditService },
-      ],
+      providers: [provideRouter([]), { provide: AuditService, useValue: mockAuditService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AuditLogList);

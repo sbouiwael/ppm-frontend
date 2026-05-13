@@ -31,28 +31,57 @@ describe('PortfolioDashboard', () => {
     usersByRole: { DEV: 8, PM: 3, PMO: 2, ADMIN: 1, QA: 1 },
     projectHealthOverview: [
       {
-        id: 1, name: 'Core Banking',  progress: 20, startDate: '2026-01-01',
-        endDate: '2026-03-01', baselineEndDate: null,
-        isActive: true, healthStatus: 'DELAYED',
-        managerId: 10, portfolioId: 1, portfolioName: 'Digital', taskCount: 12,
+        id: 1,
+        name: 'Core Banking',
+        progress: 20,
+        startDate: '2026-01-01',
+        endDate: '2026-03-01',
+        baselineEndDate: null,
+        isActive: true,
+        healthStatus: 'DELAYED',
+        managerId: 10,
+        portfolioId: 1,
+        portfolioName: 'Digital',
+        taskCount: 12,
       },
       {
-        id: 2, name: 'Mobile App',    progress: 60, startDate: '2026-02-01',
-        endDate: '2026-06-01', baselineEndDate: null,
-        isActive: true, healthStatus: 'ON_TRACK',
-        managerId: 11, portfolioId: 1, portfolioName: 'Digital', taskCount: 8,
+        id: 2,
+        name: 'Mobile App',
+        progress: 60,
+        startDate: '2026-02-01',
+        endDate: '2026-06-01',
+        baselineEndDate: null,
+        isActive: true,
+        healthStatus: 'ON_TRACK',
+        managerId: 11,
+        portfolioId: 1,
+        portfolioName: 'Digital',
+        taskCount: 8,
       },
       {
-        id: 3, name: 'Data Warehouse', progress: 100, startDate: '2025-01-01',
-        endDate: '2025-12-31', baselineEndDate: null,
-        isActive: false, healthStatus: 'COMPLETED',
-        managerId: 10, portfolioId: 2, portfolioName: 'Analytics', taskCount: 5,
+        id: 3,
+        name: 'Data Warehouse',
+        progress: 100,
+        startDate: '2025-01-01',
+        endDate: '2025-12-31',
+        baselineEndDate: null,
+        isActive: false,
+        healthStatus: 'COMPLETED',
+        managerId: 10,
+        portfolioId: 2,
+        portfolioName: 'Analytics',
+        taskCount: 5,
       },
     ],
     portfolioSummaries: [
       {
-        id: 1, name: 'Digital',    projectCount: 5, activeProjectCount: 4,
-        delayedProjectCount: 1, completedProjectCount: 1, avgProgress: 52,
+        id: 1,
+        name: 'Digital',
+        projectCount: 5,
+        activeProjectCount: 4,
+        delayedProjectCount: 1,
+        completedProjectCount: 1,
+        avgProgress: 52,
       },
     ],
   };
@@ -67,10 +96,7 @@ describe('PortfolioDashboard', () => {
 
     await TestBed.configureTestingModule({
       imports: [PortfolioDashboard],
-      providers: [
-        provideRouter([]),
-        { provide: DashboardService, useValue: mockDashboardService },
-      ],
+      providers: [provideRouter([]), { provide: DashboardService, useValue: mockDashboardService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PortfolioDashboard);
@@ -91,9 +117,7 @@ describe('PortfolioDashboard', () => {
   });
 
   it('should set errorMessage on service failure', () => {
-    mockDashboardService.getPortfolioDashboard.mockReturnValue(
-      throwError(() => ({ status: 403 }))
-    );
+    mockDashboardService.getPortfolioDashboard.mockReturnValue(throwError(() => ({ status: 403 })));
     const f2 = TestBed.createComponent(PortfolioDashboard);
     const c2 = f2.componentInstance;
     f2.detectChanges();

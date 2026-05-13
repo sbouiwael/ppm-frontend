@@ -58,7 +58,7 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
     private calendarService: CalendarService,
     private route: ActivatedRoute,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
@@ -147,7 +147,7 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
 
     const newPfId = v.portefeuilleId ? Number(v.portefeuilleId) : null;
     const oldPfId = this.projectData?.portefeuilleId ?? null;
-    const selectedPf = this.portefeuilles.find(pf => pf.id === newPfId);
+    const selectedPf = this.portefeuilles.find((pf) => pf.id === newPfId);
 
     const payload: UpdateProjectRequest = {
       name: String(v.name).trim(),
@@ -180,9 +180,7 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
         console.error(err);
         this.loading = false;
         this.errorMsg =
-          typeof err?.error === 'string'
-            ? err.error
-            : (err?.error?.message ?? 'Update failed');
+          typeof err?.error === 'string' ? err.error : (err?.error?.message ?? 'Update failed');
       },
     });
   }
@@ -200,7 +198,8 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
         next: () => {
           if (newPfId) {
             this.portefeuilleService.addProject(newPfId, this.projectId).subscribe({
-              next: done, error: done,
+              next: done,
+              error: done,
             });
           } else {
             done();
@@ -210,7 +209,8 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
           // Old removal failed (maybe already unassigned), try adding to new anyway
           if (newPfId) {
             this.portefeuilleService.addProject(newPfId, this.projectId).subscribe({
-              next: done, error: done,
+              next: done,
+              error: done,
             });
           } else {
             done();
@@ -220,7 +220,8 @@ export class ProjectEdit implements OnInit, HasUnsavedChanges {
     } else if (newPfId) {
       // No old portfolio, just add to new
       this.portefeuilleService.addProject(newPfId, this.projectId).subscribe({
-        next: done, error: done,
+        next: done,
+        error: done,
       });
     } else {
       done();

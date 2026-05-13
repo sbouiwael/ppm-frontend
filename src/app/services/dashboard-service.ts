@@ -32,18 +32,31 @@ export interface DashboardData {
   usersByRole: Record<string, number>;
   /** Statistiques detaillees par projet */
   projectStats: {
-    id: number; name: string; progress: number;
-    startDate: string; endDate: string; baselineEndDate: string;
-    active: boolean; taskCount: number; managerId: number;
+    id: number;
+    name: string;
+    progress: number;
+    startDate: string;
+    endDate: string;
+    baselineEndDate: string;
+    active: boolean;
+    taskCount: number;
+    managerId: number;
   }[];
   /** Statistiques par portefeuille (nombre de projets, progression moyenne) */
   portfolioStats: {
-    id: number; name: string; projectCount: number; avgProgress: number;
+    id: number;
+    name: string;
+    projectCount: number;
+    avgProgress: number;
   }[];
   /** Charge de travail par utilisateur (capacite vs heures assignees) */
   workload: {
-    userId: number; firstName: string; lastName: string;
-    role: string; weeklyCapacity: number; totalAssignedHours: number;
+    userId: number;
+    firstName: string;
+    lastName: string;
+    role: string;
+    weeklyCapacity: number;
+    totalAssignedHours: number;
   }[];
 }
 

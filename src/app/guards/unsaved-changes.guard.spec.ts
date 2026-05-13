@@ -9,7 +9,6 @@ import { unsavedChangesGuard, HasUnsavedChanges } from './unsaved-changes.guard'
  *   3. Formulaire modifie + confirmation refusee → navigation bloquee
  */
 describe('unsavedChangesGuard', () => {
-
   it('should allow deactivation when hasUnsavedChanges() returns false', () => {
     const cleanComponent: HasUnsavedChanges = { hasUnsavedChanges: () => false };
     const result = unsavedChangesGuard(cleanComponent, {} as any, {} as any, {} as any);

@@ -16,7 +16,7 @@
   background-color: rgba(66, 183, 212, 0.05);
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   margin-right: var(--space-md);
   transform: scale(1.2);
 }
@@ -35,17 +35,17 @@ select:hover {
   border-color: var(--color-accent);
 }
 
-input[type="date"] {
+input[type='date'] {
   position: relative;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator {
+input[type='date']::-webkit-calendar-picker-indicator {
   cursor: pointer;
   opacity: 0.6;
   transition: opacity var(--transition-fast);
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+input[type='date']::-webkit-calendar-picker-indicator:hover {
   opacity: 1;
 }
 

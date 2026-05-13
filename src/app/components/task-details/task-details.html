@@ -1,17 +1,34 @@
 <div class="container-sm">
   @if (vm$ | async; as vm) {
-
     <div class="page-header">
       <h1 class="page-title">Task Details</h1>
       <div class="header-actions">
         @if (vm.task) {
-          <a [routerLink]="['/tasks', vm.taskId, 'edit']" class="btn btn-outline btn-sm" title="Edit Task">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16" style="vertical-align:middle;margin-right:4px;">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <a
+            [routerLink]="['/tasks', vm.taskId, 'edit']"
+            class="btn btn-outline btn-sm"
+            title="Edit Task"
+          >
+            <svg
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              width="16"
+              height="16"
+              style="vertical-align: middle; margin-right: 4px"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
             </svg>
             Edit
           </a>
-          <a [routerLink]="['/projects', vm.task.projectId]" class="btn btn-outline btn-sm">← Back to Project</a>
+          <a [routerLink]="['/projects', vm.task.projectId]" class="btn btn-outline btn-sm"
+            >← Back to Project</a
+          >
         }
         <a routerLink="/tasks" class="btn btn-outline btn-sm">← All Tasks</a>
       </div>
@@ -72,7 +89,7 @@
                 <span class="detail-label">Project</span>
                 <span class="detail-value">
                   <a [routerLink]="['/projects', vm.task.projectId]" class="link-value">
-                    {{ vm.task.projectName ?? ('Project #' + vm.task.projectId) }}
+                    {{ vm.task.projectName ?? 'Project #' + vm.task.projectId }}
                   </a>
                 </span>
               </div>
@@ -81,23 +98,23 @@
             @if (vm.task.startDate) {
               <div class="detail-item">
                 <span class="detail-label">Start Date</span>
-                <span class="detail-value">{{ vm.task.startDate | date:'mediumDate' }}</span>
+                <span class="detail-value">{{ vm.task.startDate | date: 'mediumDate' }}</span>
               </div>
             }
 
             @if (vm.task.endDate) {
               <div class="detail-item">
                 <span class="detail-label">End Date</span>
-                <span class="detail-value">{{ vm.task.endDate | date:'mediumDate' }}</span>
+                <span class="detail-value">{{ vm.task.endDate | date: 'mediumDate' }}</span>
               </div>
             }
 
-           @if (vm.task.workHours != null) {
-  <div class="detail-item">
-    <span class="detail-label">Planned Work</span>
-    <span class="detail-value">{{ vm.task.workHours }}h</span>
-  </div>
-}
+            @if (vm.task.workHours != null) {
+              <div class="detail-item">
+                <span class="detail-label">Planned Work</span>
+                <span class="detail-value">{{ vm.task.workHours }}h</span>
+              </div>
+            }
 
             <div class="detail-item">
               <span class="detail-label">Assigned Resources</span>
@@ -107,7 +124,10 @@
                     {{ vm.task.assignedUserIds.length }} active assignee(s)
                   </a>
                 } @else {
-                  <a [routerLink]="['/tasks', vm.taskId, 'assignments']" class="link-value text-muted">
+                  <a
+                    [routerLink]="['/tasks', vm.taskId, 'assignments']"
+                    class="link-value text-muted"
+                  >
                     No assignees — click to assign
                   </a>
                 }
@@ -119,7 +139,7 @@
                 <span class="detail-label">Parent Task</span>
                 <span class="detail-value">
                   <a [routerLink]="['/tasks', vm.task.parentTaskId]" class="link-value">
-                    {{ vm.task.parentTaskName ?? ('Task #' + vm.task.parentTaskId) }}
+                    {{ vm.task.parentTaskName ?? 'Task #' + vm.task.parentTaskId }}
                   </a>
                 </span>
               </div>
@@ -133,7 +153,12 @@
         <div class="grid grid-cols-2">
           <a [routerLink]="['/tasks', vm.taskId, 'assignments']" class="management-card">
             <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+              />
             </svg>
             <div>
               <h4>Assignments</h4>
@@ -143,7 +168,12 @@
 
           <a [routerLink]="['/tasks', vm.taskId, 'dependencies']" class="management-card">
             <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
             </svg>
             <div>
               <h4>Dependencies</h4>
@@ -153,7 +183,12 @@
 
           <a [routerLink]="['/tasks', vm.taskId, 'edit']" class="management-card">
             <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
             </svg>
             <div>
               <h4>Edit Task</h4>
@@ -163,7 +198,12 @@
 
           <a [routerLink]="['/projects', vm.task.projectId, 'gantt']" class="management-card">
             <svg class="management-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
             </svg>
             <div>
               <h4>Gantt Chart</h4>
@@ -172,7 +212,6 @@
           </a>
         </div>
       </div>
-
     } @else if (!vm.loading && !vm.errorMessage) {
       <div class="card text-center">
         <p class="text-muted">Task not found.</p>
@@ -181,4 +220,3 @@
     }
   }
 </div>
-

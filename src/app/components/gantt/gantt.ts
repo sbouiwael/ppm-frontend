@@ -5,7 +5,12 @@
  * du diagramme, et gere les interactions (zoom, scroll, drag, edition inline).
  */
 import {
-  Component, OnInit, OnDestroy, ElementRef, ViewChild, ChangeDetectorRef,
+  Component,
+  OnInit,
+  OnDestroy,
+  ElementRef,
+  ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
@@ -21,11 +26,22 @@ import { GanttGrid, CellEdit, NewTaskRequest } from './gantt-grid';
 import { GanttTimeline } from './gantt-timeline';
 import { GanttTimescale } from './gantt-timescale';
 import {
-  GanttTask, TimelineConfig, BarRect, ArrowPath, TimescaleRow, ZoomLevel,
+  GanttTask,
+  TimelineConfig,
+  BarRect,
+  ArrowPath,
+  TimescaleRow,
+  ZoomLevel,
 } from './gantt.models';
 import {
-  buildTimelineConfig, computeBar, computeArrow, generateTimescale,
-  buildTaskTree, flattenTree, buildPredecessorsLabel, computeCriticalPath,
+  buildTimelineConfig,
+  computeBar,
+  computeArrow,
+  generateTimescale,
+  buildTaskTree,
+  flattenTree,
+  buildPredecessorsLabel,
+  computeCriticalPath,
   dateToX,
 } from './gantt.utils';
 
@@ -137,9 +153,11 @@ export class Gantt implements OnInit, OnDestroy {
         console.error(err);
         this.loading = false;
         this.errorMessage =
-          err?.error?.message
-          || (typeof err?.error === 'string' ? err.error : null)
-          || (err?.status ? `Error ${err.status}: failed to load project data` : 'Failed to load project data.');
+          err?.error?.message ||
+          (typeof err?.error === 'string' ? err.error : null) ||
+          (err?.status
+            ? `Error ${err.status}: failed to load project data`
+            : 'Failed to load project data.');
         this.cdr.detectChanges();
       },
     });
@@ -163,7 +181,9 @@ export class Gantt implements OnInit, OnDestroy {
 
     // 4. Build predecessors labels
     const taskIdToRow = new Map<number, number>();
-    this.tasks.forEach((t, i) => { if (t.id != null) taskIdToRow.set(t.id, i); });
+    this.tasks.forEach((t, i) => {
+      if (t.id != null) taskIdToRow.set(t.id, i);
+    });
     for (const t of this.tasks) {
       if (t.id != null) {
         t.predecessorsLabel = buildPredecessorsLabel(t.id, this.dependencies, taskIdToRow);
@@ -260,7 +280,8 @@ export class Gantt implements OnInit, OnDestroy {
     if (viewportWidth <= 0 || this.tasks.length === 0) return;
 
     // Find min start, max end
-    let minX = Infinity, maxX = 0;
+    let minX = Infinity,
+      maxX = 0;
     for (const bar of this.bars) {
       if (bar.x < minX) minX = bar.x;
       const right = bar.isMilestone ? bar.x + 12 : bar.x + bar.width;
@@ -285,10 +306,11 @@ export class Gantt implements OnInit, OnDestroy {
     // Scroll to start of content
     setTimeout(() => {
       if (this.timelineBody) {
-        const newMinX = this.bars.length > 0 ? Math.min(...this.bars.map(b => b.x)) : 0;
+        const newMinX = this.bars.length > 0 ? Math.min(...this.bars.map((b) => b.x)) : 0;
         this.timelineBody.nativeElement.scrollLeft = Math.max(0, newMinX - 20);
         if (this.timescaleHeader) {
-          this.timescaleHeader.nativeElement.scrollLeft = this.timelineBody.nativeElement.scrollLeft;
+          this.timescaleHeader.nativeElement.scrollLeft =
+            this.timelineBody.nativeElement.scrollLeft;
         }
       }
     });
@@ -467,12 +489,12 @@ export class Gantt implements OnInit, OnDestroy {
 
   /** Recherche une tache brute par son ID */
   private findRawTask(taskId: number): TaskDTO | undefined {
-    return this.rawTasks.find(t => t.id === taskId);
+    return this.rawTasks.find((t) => t.id === taskId);
   }
 
   /** Remplace une tache brute par sa version sauvegardee */
   private replaceRawTask(taskId: number, saved: TaskDTO): void {
-    const idx = this.rawTasks.findIndex(t => t.id === taskId);
+    const idx = this.rawTasks.findIndex((t) => t.id === taskId);
     if (idx >= 0) this.rawTasks[idx] = saved;
   }
 }

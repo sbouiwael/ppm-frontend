@@ -54,7 +54,7 @@
 .search-input {
   width: 100%;
   padding: 10px 12px 10px 40px;
-  border: 2px solid var(--color-border, rgba(0,0,0,0.12));
+  border: 2px solid var(--color-border, rgba(0, 0, 0, 0.12));
   border-radius: 10px;
   font-size: 14px;
   background: var(--color-surface, #fff);
@@ -82,7 +82,7 @@
 
 .sort-select {
   padding: 10px 32px 10px 12px;
-  border: 2px solid var(--color-border, rgba(0,0,0,0.12));
+  border: 2px solid var(--color-border, rgba(0, 0, 0, 0.12));
   border-radius: 10px;
   font-size: 14px;
   background: var(--color-surface, #fff);
@@ -116,7 +116,7 @@
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  border: 1px solid var(--color-border, rgba(0,0,0,0.12));
+  border: 1px solid var(--color-border, rgba(0, 0, 0, 0.12));
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -129,17 +129,17 @@
 
 .action-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .action-btn-edit {
-  color: var(--color-primary, #00687B);
-  border-color: var(--color-primary, #00687B);
+  color: var(--color-primary, #00687b);
+  border-color: var(--color-primary, #00687b);
 }
 
 .action-btn-edit:hover {
   background: rgba(0, 104, 123, 0.08);
-  color: var(--color-primary, #00687B);
+  color: var(--color-primary, #00687b);
 }
 
 .action-btn-warning {
@@ -162,7 +162,7 @@
 
 .action-btn-danger {
   color: var(--color-text-secondary);
-  border-color: var(--color-border, rgba(0,0,0,0.12));
+  border-color: var(--color-border, rgba(0, 0, 0, 0.12));
 }
 
 .action-btn-danger:hover {

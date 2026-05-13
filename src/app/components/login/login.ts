@@ -29,7 +29,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     // Si deja connecte, rediriger directement vers l'accueil
     if (this.authService.isLoggedIn) {

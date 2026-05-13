@@ -17,11 +17,7 @@ describe('NotificationService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [
-        NotificationService,
-        provideHttpClient(),
-        provideHttpClientTesting(),
-      ],
+      providers: [NotificationService, provideHttpClient(), provideHttpClientTesting()],
     });
     service = TestBed.inject(NotificationService);
     httpMock = TestBed.inject(HttpTestingController);
@@ -49,7 +45,7 @@ describe('NotificationService', () => {
 
   it('getUnreadCount() should map { count } response to number', () => {
     let result = -1;
-    service.getUnreadCount().subscribe(n => (result = n));
+    service.getUnreadCount().subscribe((n) => (result = n));
     const req = httpMock.expectOne(`${base}/me/unread-count`);
     req.flush({ count: 7 });
     expect(result).toBe(7);
@@ -57,7 +53,7 @@ describe('NotificationService', () => {
 
   it('getUnreadCount() should return 0 when count is missing', () => {
     let result = -1;
-    service.getUnreadCount().subscribe(n => (result = n));
+    service.getUnreadCount().subscribe((n) => (result = n));
     const req = httpMock.expectOne(`${base}/me/unread-count`);
     req.flush({});
     expect(result).toBe(0);

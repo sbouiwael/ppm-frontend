@@ -22,9 +22,9 @@ export interface ZoomConfig {
 
 /** Configuration des niveaux de zoom */
 export const ZOOM_CONFIGS: Record<ZoomLevel, ZoomConfig> = {
-  day:   { pixelsPerDay: 36, topLabel: 'months', bottomLabel: 'days' },
-  week:  { pixelsPerDay: 12, topLabel: 'months', bottomLabel: 'weeks' },
-  month: { pixelsPerDay: 3,  topLabel: 'years',  bottomLabel: 'months' },
+  day: { pixelsPerDay: 36, topLabel: 'months', bottomLabel: 'days' },
+  week: { pixelsPerDay: 12, topLabel: 'months', bottomLabel: 'weeks' },
+  month: { pixelsPerDay: 3, topLabel: 'years', bottomLabel: 'months' },
 };
 
 // --- Constantes de dimensions (en pixels) ---

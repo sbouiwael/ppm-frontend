@@ -6,7 +6,7 @@
     </a>
   </div>
 
-  <div class="card" style="margin-bottom: 12px;">
+  <div class="card" style="margin-bottom: 12px">
     <div class="grid grid-cols-2">
       <div class="form-group">
         <label>Select Project *</label>
@@ -17,8 +17,10 @@
           }
         </select>
       </div>
-      <div class="form-actions" style="align-items: end;">
-        <button class="btn btn-primary" (click)="loadTasks()" [disabled]="!projectId">Load Tasks</button>
+      <div class="form-actions" style="align-items: end">
+        <button class="btn btn-primary" (click)="loadTasks()" [disabled]="!projectId">
+          Load Tasks
+        </button>
         @if (projectId) {
           <button class="btn btn-outline" (click)="onViewInGantt($event)">View Gantt</button>
         }
@@ -29,10 +31,28 @@
   <!-- Search & Sort Bar -->
   <div class="search-sort-bar">
     <div class="search-box">
-      <svg class="search-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+      <svg
+        class="search-icon"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        width="18"
+        height="18"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        />
       </svg>
-      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1" placeholder="Search tasks..." class="search-input" />
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="currentPage = 1"
+        placeholder="Search tasks..."
+        class="search-input"
+      />
     </div>
     <div class="sort-box">
       <label class="sort-label">Sort by:</label>
@@ -97,37 +117,95 @@
                     [class.action-btn-success]="task.active === false"
                     [class.action-btn-warning]="task.active !== false"
                     [title]="task.active === false ? 'Activate' : 'Deactivate'"
-                    (click)="toggleActive(task, $event)">
+                    (click)="toggleActive(task, $event)"
+                  >
                     @if (task.active === false) {
-                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        width="15"
+                        height="15"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       Activate
                     } @else {
-                      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        width="15"
+                        height="15"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                        />
                       </svg>
                       Deactivate
                     }
                   </button>
                 }
                 @if (canCreate) {
-                  <button class="action-btn action-btn-subtask" title="Add Subtask" (click)="onAddSubtask(task, $event)">
-                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                  <button
+                    class="action-btn action-btn-subtask"
+                    title="Add Subtask"
+                    (click)="onAddSubtask(task, $event)"
+                  >
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      width="15"
+                      height="15"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M12 4v16m8-8H4"
+                      />
                     </svg>
                     Subtask
                   </button>
                 }
-                <button class="action-btn action-btn-edit" title="Edit" (click)="onEdit(task, $event)" [hidden]="!canEdit">
+                <button
+                  class="action-btn action-btn-edit"
+                  title="Edit"
+                  (click)="onEdit(task, $event)"
+                  [hidden]="!canEdit"
+                >
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    />
                   </svg>
                   Edit
                 </button>
-                <button class="action-btn action-btn-danger" title="Delete" (click)="askDelete(task, $event)" [hidden]="!canDelete">
+                <button
+                  class="action-btn action-btn-danger"
+                  title="Delete"
+                  (click)="askDelete(task, $event)"
+                  [hidden]="!canDelete"
+                >
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
                   </svg>
                   Delete
                 </button>
@@ -138,7 +216,12 @@
             @if (task.parentTaskName) {
               <div class="parent-breadcrumb">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="12" height="12">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
                 </svg>
                 <span>Under: {{ task.parentTaskName }}</span>
               </div>
@@ -167,13 +250,13 @@
                 @if (task.startDate) {
                   <div class="meta-item">
                     <span class="meta-label">Start:</span>
-                    <span class="meta-value">{{ task.startDate | date:'shortDate' }}</span>
+                    <span class="meta-value">{{ task.startDate | date: 'shortDate' }}</span>
                   </div>
                 }
                 @if (task.endDate) {
                   <div class="meta-item">
                     <span class="meta-label">End:</span>
-                    <span class="meta-value">{{ task.endDate | date:'shortDate' }}</span>
+                    <span class="meta-value">{{ task.endDate | date: 'shortDate' }}</span>
                   </div>
                 }
                 @if (task.durationDays != null) {
@@ -185,7 +268,7 @@
               </div>
 
               @if (task.workHours != null) {
-                <div class="meta-item" style="margin-top: 8px;">
+                <div class="meta-item" style="margin-top: 8px">
                   <span class="meta-label">Planned Work:</span>
                   <span class="meta-value">{{ task.workHours }}h</span>
                 </div>
@@ -195,7 +278,9 @@
 
           <div class="card-footer">
             <a [routerLink]="['/tasks', task.id]" class="btn btn-outline btn-sm">View Details</a>
-            <a [routerLink]="['/tasks', task.id, 'assignments']" class="btn btn-outline btn-sm">Assignments</a>
+            <a [routerLink]="['/tasks', task.id, 'assignments']" class="btn btn-outline btn-sm"
+              >Assignments</a
+            >
             @if (projectId) {
               <button class="btn btn-outline btn-sm" (click)="onViewInGantt($event)">Gantt</button>
             }

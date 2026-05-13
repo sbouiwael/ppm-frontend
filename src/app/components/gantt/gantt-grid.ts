@@ -1,4 +1,12 @@
-import { Component, Input, Output, EventEmitter, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  AfterViewChecked,
+  ElementRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { GanttTask, ROW_HEIGHT, INDENT_PX } from './gantt.models';
@@ -126,11 +134,16 @@ export class GanttGrid implements AfterViewChecked {
 
   statusLabel(status: string | null | undefined): string {
     switch (status) {
-      case 'NOT_STARTED': return 'Not Started';
-      case 'IN_PROGRESS': return 'In Progress';
-      case 'DONE':        return 'Done';
-      case 'BLOCKED':     return 'Blocked';
-      default:            return '';
+      case 'NOT_STARTED':
+        return 'Not Started';
+      case 'IN_PROGRESS':
+        return 'In Progress';
+      case 'DONE':
+        return 'Done';
+      case 'BLOCKED':
+        return 'Blocked';
+      default:
+        return '';
     }
   }
 

@@ -1,188 +1,212 @@
 <div class="container">
-
   <!-- Page Header -->
   <div class="page-header">
     <div>
       <h1 class="page-title">Resource Capacity Planning</h1>
-      <p class="page-subtitle">Compare assigned workload vs available capacity for all active resources</p>
+      <p class="page-subtitle">
+        Compare assigned workload vs available capacity for all active resources
+      </p>
     </div>
   </div>
 
   <!-- View Toggle -->
   <div class="view-tabs">
-    <button class="view-tab" [class.view-tab--active]="activeView === 'overview'" (click)="switchView('overview')">
+    <button
+      class="view-tab"
+      [class.view-tab--active]="activeView === 'overview'"
+      (click)="switchView('overview')"
+    >
       Overview
     </button>
-    <button class="view-tab" [class.view-tab--active]="activeView === 'weekly'" (click)="switchView('weekly')">
+    <button
+      class="view-tab"
+      [class.view-tab--active]="activeView === 'weekly'"
+      (click)="switchView('weekly')"
+    >
       Weekly Heatmap
     </button>
   </div>
 
   @if (activeView === 'overview') {
+    <!-- Summary Cards -->
+    @if (!loading && allResources.length > 0) {
+      <div class="summary-grid">
+        <div class="summary-card summary-card--overloaded">
+          <div class="summary-count">{{ countByStatus('OVERLOADED') }}</div>
+          <div class="summary-label">Overloaded</div>
+          <div class="summary-desc">More than 100% capacity</div>
+        </div>
+        <div class="summary-card summary-card--balanced">
+          <div class="summary-count">{{ countByStatus('BALANCED') }}</div>
+          <div class="summary-label">Balanced</div>
+          <div class="summary-desc">75% to 100% capacity</div>
+        </div>
+        <div class="summary-card summary-card--underutilized">
+          <div class="summary-count">{{ countByStatus('UNDERUTILIZED') }}</div>
+          <div class="summary-label">Underutilized</div>
+          <div class="summary-desc">Below 75% capacity</div>
+        </div>
+        <div class="summary-card summary-card--no-capacity">
+          <div class="summary-count">{{ countByStatus('NO_CAPACITY') }}</div>
+          <div class="summary-label">No Capacity</div>
+          <div class="summary-desc">Capacity not configured</div>
+        </div>
+      </div>
+    }
 
-  <!-- Summary Cards -->
-  @if (!loading && allResources.length > 0) {
-    <div class="summary-grid">
-      <div class="summary-card summary-card--overloaded">
-        <div class="summary-count">{{ countByStatus('OVERLOADED') }}</div>
-        <div class="summary-label">Overloaded</div>
-        <div class="summary-desc">More than 100% capacity</div>
-      </div>
-      <div class="summary-card summary-card--balanced">
-        <div class="summary-count">{{ countByStatus('BALANCED') }}</div>
-        <div class="summary-label">Balanced</div>
-        <div class="summary-desc">75% to 100% capacity</div>
-      </div>
-      <div class="summary-card summary-card--underutilized">
-        <div class="summary-count">{{ countByStatus('UNDERUTILIZED') }}</div>
-        <div class="summary-label">Underutilized</div>
-        <div class="summary-desc">Below 75% capacity</div>
-      </div>
-      <div class="summary-card summary-card--no-capacity">
-        <div class="summary-count">{{ countByStatus('NO_CAPACITY') }}</div>
-        <div class="summary-label">No Capacity</div>
-        <div class="summary-desc">Capacity not configured</div>
+    <!-- Filters -->
+    <div class="filters-card card">
+      <div class="filters-row">
+        <!-- Role filter -->
+        <div class="filter-group">
+          <label class="filter-label">Role</label>
+          <select
+            [(ngModel)]="filterRole"
+            (ngModelChange)="onRoleFilterChange()"
+            class="filter-select"
+          >
+            <option value="">All Roles</option>
+            <option value="PM">PM</option>
+            <option value="PMO">PMO</option>
+            <option value="DEV">DEV</option>
+            <option value="QA">QA</option>
+            <option value="DEVOPS">DEVOPS</option>
+            <option value="RH">RH</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+
+        <!-- Project filter -->
+        <div class="filter-group">
+          <label class="filter-label">Project scope</label>
+          <select
+            [(ngModel)]="selectedProjectId"
+            (ngModelChange)="onProjectFilterChange()"
+            class="filter-select"
+          >
+            <option [ngValue]="undefined">All Projects</option>
+            @for (p of projects; track p.id) {
+              <option [ngValue]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Status filter (local) -->
+        <div class="filter-group">
+          <label class="filter-label">Capacity status</label>
+          <select [(ngModel)]="filterStatus" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="OVERLOADED">Overloaded</option>
+            <option value="BALANCED">Balanced</option>
+            <option value="UNDERUTILIZED">Underutilized</option>
+            <option value="NO_CAPACITY">No Capacity</option>
+          </select>
+        </div>
+
+        <button class="btn btn-outline btn-sm" (click)="resetFilters()">Reset</button>
       </div>
     </div>
-  }
 
-  <!-- Filters -->
-  <div class="filters-card card">
-    <div class="filters-row">
+    @if (loading) {
+      <div class="loading">Loading capacity data...</div>
+    }
 
-      <!-- Role filter -->
-      <div class="filter-group">
-        <label class="filter-label">Role</label>
-        <select [(ngModel)]="filterRole" (ngModelChange)="onRoleFilterChange()" class="filter-select">
-          <option value="">All Roles</option>
-          <option value="PM">PM</option>
-          <option value="PMO">PMO</option>
-          <option value="DEV">DEV</option>
-          <option value="QA">QA</option>
-          <option value="DEVOPS">DEVOPS</option>
-          <option value="RH">RH</option>
-          <option value="ADMIN">ADMIN</option>
-        </select>
-      </div>
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
 
-      <!-- Project filter -->
-      <div class="filter-group">
-        <label class="filter-label">Project scope</label>
-        <select [(ngModel)]="selectedProjectId" (ngModelChange)="onProjectFilterChange()" class="filter-select">
-          <option [ngValue]="undefined">All Projects</option>
-          @for (p of projects; track p.id) {
-            <option [ngValue]="p.id">{{ p.name }}</option>
-          }
-        </select>
-      </div>
-
-      <!-- Status filter (local) -->
-      <div class="filter-group">
-        <label class="filter-label">Capacity status</label>
-        <select [(ngModel)]="filterStatus" class="filter-select">
-          <option value="">All Statuses</option>
-          <option value="OVERLOADED">Overloaded</option>
-          <option value="BALANCED">Balanced</option>
-          <option value="UNDERUTILIZED">Underutilized</option>
-          <option value="NO_CAPACITY">No Capacity</option>
-        </select>
-      </div>
-
-      <button class="btn btn-outline btn-sm" (click)="resetFilters()">Reset</button>
-    </div>
-  </div>
-
-  @if (loading) {
-    <div class="loading">Loading capacity data...</div>
-  }
-
-  @if (errorMessage) {
-    <div class="alert alert-error">{{ errorMessage }}</div>
-  }
-
-  <!-- Capacity table -->
-  @if (!loading && filteredResources.length > 0) {
-    <div class="capacity-table-wrapper card">
-      <table class="capacity-table">
-        <thead>
-          <tr>
-            <th>Resource</th>
-            <th>Role</th>
-            <th>Weekly Capacity</th>
-            <th>Assigned Hours</th>
-            <th>Utilization</th>
-            <th>Status</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (r of filteredResources; track r.userId) {
-            <tr [class.row--overloaded]="r.capacityStatus === 'OVERLOADED'">
-              <td>
-                <div class="resource-name">
-                  <span class="resource-avatar">{{ r.firstName.charAt(0) }}{{ r.lastName.charAt(0) }}</span>
-                  <div class="resource-info">
-                    <span class="resource-full-name">{{ r.firstName }} {{ r.lastName }}</span>
-                    <span class="resource-email">{{ r.email }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>
-                <span class="role-badge role-badge--{{ r.role.toLowerCase() }}">{{ r.role }}</span>
-              </td>
-              <td class="text-center">
-                <span class="hours-value">{{ r.weeklyCapacity }}h</span>
-              </td>
-              <td class="text-center">
-                <span class="hours-value"
-                      [class.hours-overloaded]="r.capacityStatus === 'OVERLOADED'">
-                  {{ r.totalAssignedHours }}h
-                </span>
-              </td>
-              <td class="utilization-cell">
-                <div class="utilization-row">
-                  <div class="util-track">
-                    <div [class]="getUtilizationBarClass(r.capacityStatus)"
-                         [style.width.%]="clampPct(r.utilizationPct)">
+    <!-- Capacity table -->
+    @if (!loading && filteredResources.length > 0) {
+      <div class="capacity-table-wrapper card">
+        <table class="capacity-table">
+          <thead>
+            <tr>
+              <th>Resource</th>
+              <th>Role</th>
+              <th>Weekly Capacity</th>
+              <th>Assigned Hours</th>
+              <th>Utilization</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredResources; track r.userId) {
+              <tr [class.row--overloaded]="r.capacityStatus === 'OVERLOADED'">
+                <td>
+                  <div class="resource-name">
+                    <span class="resource-avatar"
+                      >{{ r.firstName.charAt(0) }}{{ r.lastName.charAt(0) }}</span
+                    >
+                    <div class="resource-info">
+                      <span class="resource-full-name">{{ r.firstName }} {{ r.lastName }}</span>
+                      <span class="resource-email">{{ r.email }}</span>
                     </div>
                   </div>
-                  <span class="util-pct"
-                        [class.util-pct--overloaded]="r.capacityStatus === 'OVERLOADED'">
-                    {{ r.utilizationPct | number:'1.0-1' }}%
+                </td>
+                <td>
+                  <span class="role-badge role-badge--{{ r.role.toLowerCase() }}">{{
+                    r.role
+                  }}</span>
+                </td>
+                <td class="text-center">
+                  <span class="hours-value">{{ r.weeklyCapacity }}h</span>
+                </td>
+                <td class="text-center">
+                  <span
+                    class="hours-value"
+                    [class.hours-overloaded]="r.capacityStatus === 'OVERLOADED'"
+                  >
+                    {{ r.totalAssignedHours }}h
                   </span>
-                </div>
-              </td>
-              <td>
-                <span [class]="getStatusBadgeClass(r.capacityStatus)">
-                  {{ statusLabel(r.capacityStatus) }}
-                </span>
-              </td>
-              <td>
-                <a [routerLink]="['/users', r.userId, 'edit']" class="action-link">
-                  View Profile
-                </a>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
+                </td>
+                <td class="utilization-cell">
+                  <div class="utilization-row">
+                    <div class="util-track">
+                      <div
+                        [class]="getUtilizationBarClass(r.capacityStatus)"
+                        [style.width.%]="clampPct(r.utilizationPct)"
+                      ></div>
+                    </div>
+                    <span
+                      class="util-pct"
+                      [class.util-pct--overloaded]="r.capacityStatus === 'OVERLOADED'"
+                    >
+                      {{ r.utilizationPct | number: '1.0-1' }}%
+                    </span>
+                  </div>
+                </td>
+                <td>
+                  <span [class]="getStatusBadgeClass(r.capacityStatus)">
+                    {{ statusLabel(r.capacityStatus) }}
+                  </span>
+                </td>
+                <td>
+                  <a [routerLink]="['/users', r.userId, 'edit']" class="action-link">
+                    View Profile
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
 
-  @if (!loading && !errorMessage && filteredResources.length === 0 && allResources.length > 0) {
-    <div class="card text-center">
-      <p class="text-muted">No resources match your filters.</p>
-      <button class="btn btn-outline btn-sm mt-md" (click)="resetFilters()">Clear Filters</button>
-    </div>
-  }
+    @if (!loading && !errorMessage && filteredResources.length === 0 && allResources.length > 0) {
+      <div class="card text-center">
+        <p class="text-muted">No resources match your filters.</p>
+        <button class="btn btn-outline btn-sm mt-md" (click)="resetFilters()">Clear Filters</button>
+      </div>
+    }
 
-  @if (!loading && !errorMessage && allResources.length === 0) {
-    <div class="card text-center">
-      <p class="text-muted">No active resources found.</p>
-    </div>
+    @if (!loading && !errorMessage && allResources.length === 0) {
+      <div class="card text-center">
+        <p class="text-muted">No active resources found.</p>
+      </div>
+    }
   }
-
-  } <!-- end overview -->
+  <!-- end overview -->
 
   <!-- ── Weekly Heatmap ──────────────────────────────────────────── -->
   @if (activeView === 'weekly') {
@@ -193,7 +217,10 @@
       <div class="weekly-heatmap card">
         <div class="weekly-heatmap-header">
           <h3 class="section-title">Weekly Capacity Heatmap</h3>
-          <p class="section-desc">Hours assigned per resource per week. Color: green &lt;75%, yellow 75–100%, red &gt;100%.</p>
+          <p class="section-desc">
+            Hours assigned per resource per week. Color: green &lt;75%, yellow 75–100%, red
+            &gt;100%.
+          </p>
         </div>
         <div class="weekly-scroll">
           <table class="weekly-table">
@@ -212,23 +239,42 @@
                 <tr>
                   <td class="col-resource">
                     <div class="resource-mini">
-                      <span class="resource-avatar">{{ row.firstName.charAt(0) }}{{ row.lastName.charAt(0) }}</span>
+                      <span class="resource-avatar"
+                        >{{ row.firstName.charAt(0) }}{{ row.lastName.charAt(0) }}</span
+                      >
                       <span>{{ row.firstName }} {{ row.lastName }}</span>
                     </div>
                   </td>
                   <td class="col-role">
-                    <span class="role-badge role-badge--{{ row.role.toLowerCase() }}">{{ row.role }}</span>
+                    <span class="role-badge role-badge--{{ row.role.toLowerCase() }}">{{
+                      row.role
+                    }}</span>
                   </td>
                   <td class="col-cap text-center">{{ row.weeklyCapacity }}h</td>
                   @for (slot of row.weeks; track slot.weekStart) {
-                    <td [class]="weekCellClass(slot.status)"
-                        [title]="slot.weekLabel + ' | Assigned: ' + slot.assignedHours + 'h | Available: ' + slot.availableHours + 'h | ' + slot.utilizationPct + '%'">
+                    <td
+                      [class]="weekCellClass(slot.status)"
+                      [title]="
+                        slot.weekLabel +
+                        ' | Assigned: ' +
+                        slot.assignedHours +
+                        'h | Available: ' +
+                        slot.availableHours +
+                        'h | ' +
+                        slot.utilizationPct +
+                        '%'
+                      "
+                    >
                       @if (slot.assignedHours > 0) {
-                        <span class="cell-hours">{{ slot.assignedHours | number:'1.0-0' }}h</span>
-                        <span class="cell-pct">{{ slot.utilizationPct | number:'1.0-0' }}%</span>
-                        <span class="cell-avail">{{ slot.availableHours | number:'1.0-0' }}h free</span>
+                        <span class="cell-hours">{{ slot.assignedHours | number: '1.0-0' }}h</span>
+                        <span class="cell-pct">{{ slot.utilizationPct | number: '1.0-0' }}%</span>
+                        <span class="cell-avail"
+                          >{{ slot.availableHours | number: '1.0-0' }}h free</span
+                        >
                       } @else {
-                        <span class="cell-avail cell-avail--free">{{ row.weeklyCapacity }}h free</span>
+                        <span class="cell-avail cell-avail--free"
+                          >{{ row.weeklyCapacity }}h free</span
+                        >
                       }
                     </td>
                   }
@@ -242,16 +288,16 @@
     @if (!loading && weeklyData.length === 0) {
       <div class="card text-center"><p class="text-muted">No active resources found.</p></div>
     }
-  } <!-- end weekly -->
+  }
+  <!-- end weekly -->
 
   <!-- Methodology note -->
   @if (!loading) {
     <div class="methodology-note">
-      <strong>Note:</strong> Weekly hours are distributed proportionally across each task's date range
-      (assignedHours × daysOverlap / totalTaskDays). The heatmap shows assigned hours, utilization %,
-      and free hours per week. To evaluate a specific assignment before creating it, use the
-      <strong>Task Assignments</strong> page — it runs a live week-by-week capacity check.
+      <strong>Note:</strong> Weekly hours are distributed proportionally across each task's date
+      range (assignedHours × daysOverlap / totalTaskDays). The heatmap shows assigned hours,
+      utilization %, and free hours per week. To evaluate a specific assignment before creating it,
+      use the <strong>Task Assignments</strong> page — it runs a live week-by-week capacity check.
     </div>
   }
-
 </div>

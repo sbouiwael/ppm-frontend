@@ -29,7 +29,6 @@ export interface BreadcrumbItem {
 
 @Injectable({ providedIn: 'root' })
 export class BreadcrumbService {
-
   /** BehaviorSubject exposant le fil d'ariane courant */
   private breadcrumbs$ = new BehaviorSubject<BreadcrumbItem[]>([]);
 
@@ -40,11 +39,12 @@ export class BreadcrumbService {
    */
   private dynamicLabels: Map<string, string> = new Map();
 
-  constructor(private router: Router, private activatedRoute: ActivatedRoute) {
+  constructor(
+    private router: Router,
+    private activatedRoute: ActivatedRoute,
+  ) {
     // Ecoute chaque fin de navigation pour reconstruire le fil d'ariane
-    this.router.events.pipe(
-      filter(e => e instanceof NavigationEnd)
-    ).subscribe(() => {
+    this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe(() => {
       this.rebuild();
     });
   }
@@ -86,7 +86,7 @@ export class BreadcrumbService {
       return;
     }
 
-    const segments = url.split('/').filter(s => s.length > 0);
+    const segments = url.split('/').filter((s) => s.length > 0);
     const crumbs: BreadcrumbItem[] = [];
 
     // Racine : Home
@@ -119,22 +119,22 @@ export class BreadcrumbService {
 
     // 2. Labels statiques
     const staticLabels: Record<string, string> = {
-      'projects':       'Projects',
-      'new':            'New',
-      'create':         'New Task',
-      'edit':           'Edit',
-      'gantt':          'Gantt',
-      'tasks':          'Tasks',
-      'assignments':    'Assignments',
-      'dependencies':   'Dependencies',
-      'portefeuilles':  'Portfolios',
-      'users':          'Users',
-      'my-tasks':             'My Tasks',
-      'capacity':             'Capacity Planning',
+      projects: 'Projects',
+      new: 'New',
+      create: 'New Task',
+      edit: 'Edit',
+      gantt: 'Gantt',
+      tasks: 'Tasks',
+      assignments: 'Assignments',
+      dependencies: 'Dependencies',
+      portefeuilles: 'Portfolios',
+      users: 'Users',
+      'my-tasks': 'My Tasks',
+      capacity: 'Capacity Planning',
       // Wave 2
-      'audit':                'Audit Trail',
-      'notifications':        'Notifications',
-      'portfolio-dashboard':  'Portfolio Dashboard',
+      audit: 'Audit Trail',
+      notifications: 'Notifications',
+      'portfolio-dashboard': 'Portfolio Dashboard',
     };
 
     if (staticLabels[seg]) return staticLabels[seg];
@@ -143,11 +143,16 @@ export class BreadcrumbService {
     if (/^\d+$/.test(seg)) {
       const prevSeg = index > 0 ? segments[index - 1] : '';
       switch (prevSeg) {
-        case 'projects':      return `Project #${seg}`;
-        case 'tasks':         return `Task #${seg}`;
-        case 'portefeuilles': return `Portfolio #${seg}`;
-        case 'users':         return `User #${seg}`;
-        default:              return `#${seg}`;
+        case 'projects':
+          return `Project #${seg}`;
+        case 'tasks':
+          return `Task #${seg}`;
+        case 'portefeuilles':
+          return `Portfolio #${seg}`;
+        case 'users':
+          return `User #${seg}`;
+        default:
+          return `#${seg}`;
       }
     }
 

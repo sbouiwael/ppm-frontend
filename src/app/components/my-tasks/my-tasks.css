@@ -6,8 +6,13 @@
   margin: 0;
 }
 
-.page-header-left { flex: 1; }
-.page-header-right { display: flex; align-items: center; }
+.page-header-left {
+  flex: 1;
+}
+.page-header-right {
+  display: flex;
+  align-items: center;
+}
 
 .task-count-badge {
   background: rgba(0, 104, 123, 0.1);
@@ -81,7 +86,9 @@
   accent-color: var(--color-primary);
 }
 
-.toggle-text { white-space: nowrap; }
+.toggle-text {
+  white-space: nowrap;
+}
 
 /* Tasks Grid */
 .tasks-grid {
@@ -169,7 +176,9 @@
   text-decoration: none;
 }
 
-.task-name a:hover { color: var(--color-accent); }
+.task-name a:hover {
+  color: var(--color-accent);
+}
 
 .task-badges {
   display: flex;
@@ -192,10 +201,16 @@
   font-size: var(--font-size-sm);
 }
 
-.project-link:hover { color: var(--color-primary); }
+.project-link:hover {
+  color: var(--color-primary);
+}
 
 /* Progress */
-.progress-section { display: flex; flex-direction: column; gap: 6px; }
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
 .progress-label-row {
   display: flex;
@@ -311,7 +326,9 @@
   margin-bottom: var(--space-lg);
 }
 
-.empty-icon svg { margin: 0 auto; }
+.empty-icon svg {
+  margin: 0 auto;
+}
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -338,26 +355,52 @@
   font-size: var(--font-size-xs);
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
+  transition:
+    opacity 0.15s,
+    transform 0.1s;
   white-space: nowrap;
 }
-.btn-quick:disabled { opacity: 0.6; cursor: not-allowed; }
-.btn-quick:not(:disabled):hover { opacity: 0.85; transform: translateY(-1px); }
-.btn-quick:not(:disabled):active { transform: translateY(0); }
+.btn-quick:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.btn-quick:not(:disabled):hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+.btn-quick:not(:disabled):active {
+  transform: translateY(0);
+}
 
-.btn-quick--start   { background: #10b981; color: #fff; }
-.btn-quick--done    { background: var(--color-primary); color: #fff; }
-.btn-quick--blocked { background: #f59e0b; color: #fff; }
-.btn-quick--reopen  { background: #6366f1; color: #fff; }
+.btn-quick--start {
+  background: #10b981;
+  color: #fff;
+}
+.btn-quick--done {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-quick--blocked {
+  background: #f59e0b;
+  color: #fff;
+}
+.btn-quick--reopen {
+  background: #6366f1;
+  color: #fff;
+}
 
 /* Loading spinner inside button */
 .btn-spinner {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border: 2px solid rgba(255,255,255,0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
   border-radius: 50%;
   animation: btn-spin 0.6s linear infinite;
 }
-@keyframes btn-spin { to { transform: rotate(360deg); } }
+@keyframes btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

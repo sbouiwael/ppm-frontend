@@ -27,13 +27,13 @@ export class BreadcrumbComponent implements OnInit, OnDestroy {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    public auth: AuthService
+    public auth: AuthService,
   ) {}
 
   ngOnInit(): void {
-    this.breadcrumbService.items$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(items => { this.items = items; });
+    this.breadcrumbService.items$.pipe(takeUntil(this.destroy$)).subscribe((items) => {
+      this.items = items;
+    });
   }
 
   ngOnDestroy(): void {

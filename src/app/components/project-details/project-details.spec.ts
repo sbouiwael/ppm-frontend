@@ -4,7 +4,6 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-
 import { ProjectDetails } from './project-details';
 
 describe('ProjectDetails', () => {
@@ -14,11 +13,7 @@ describe('ProjectDetails', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProjectDetails],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProjectDetails);

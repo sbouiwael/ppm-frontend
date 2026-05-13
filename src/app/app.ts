@@ -12,9 +12,16 @@ import { NotificationBell } from './components/notification-bell/notification-be
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, BreadcrumbComponent, NotificationBell],
+  imports: [
+    CommonModule,
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    BreadcrumbComponent,
+    NotificationBell,
+  ],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
 export class App implements OnInit {
   /** Titre de l'application (signal reactif) */
@@ -32,7 +39,7 @@ export class App implements OnInit {
   ngOnInit(): void {
     if (this.auth.isLoggedIn) {
       this.auth.verifyToken().subscribe({
-        error: () => this.auth.logout()
+        error: () => this.auth.logout(),
       });
     }
   }

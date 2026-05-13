@@ -36,7 +36,7 @@ export class UserCreate implements HasUnsavedChanges {
     private fb: FormBuilder,
     private userService: UserService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {
     this.form = this.fb.group({
       firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -77,7 +77,10 @@ export class UserCreate implements HasUnsavedChanges {
     };
 
     this.userService.createUser(payload).subscribe({
-      next: () => { this.savedSuccessfully = true; this.router.navigateByUrl('/users'); },
+      next: () => {
+        this.savedSuccessfully = true;
+        this.router.navigateByUrl('/users');
+      },
       error: (err) => {
         console.error(err);
         this.loading = false;

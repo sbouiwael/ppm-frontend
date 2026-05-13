@@ -23,7 +23,7 @@ Chart.register(...registerables);
   standalone: true,
   imports: [CommonModule, RouterLink],
   templateUrl: './home.html',
-  styleUrl: './home.css'
+  styleUrl: './home.css',
 })
 export class HomePage implements OnInit, OnDestroy {
   /** Utilisateur actuellement connecte */
@@ -56,7 +56,7 @@ export class HomePage implements OnInit, OnDestroy {
   constructor(
     public auth: AuthService,
     private dashboardService: DashboardService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   /** Initialisation : charge les donnees du dashboard et affiche les graphiques */
@@ -65,7 +65,8 @@ export class HomePage implements OnInit, OnDestroy {
     if (!this.user) return;
     this.role = this.user.role;
 
-    this.dashboardService.getData()
+    this.dashboardService
+      .getData()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (d) => {
@@ -88,7 +89,7 @@ export class HomePage implements OnInit, OnDestroy {
 
   /** Libere les ressources : detruit les graphiques et complete le subject */
   ngOnDestroy(): void {
-    this.charts.forEach(c => c.destroy());
+    this.charts.forEach((c) => c.destroy());
     this.charts = [];
     this.destroy$.next();
     this.destroy$.complete();
@@ -108,10 +109,10 @@ export class HomePage implements OnInit, OnDestroy {
   private computeRoleData(): void {
     if (!this.data || !this.user) return;
     if (this.role === 'PM') {
-      this.myProjects = this.data.projectStats.filter(p => p.managerId === this.user!.userId);
+      this.myProjects = this.data.projectStats.filter((p) => p.managerId === this.user!.userId);
     }
     if (['DEV', 'QA', 'DEVOPS'].includes(this.role)) {
-      const me = this.data.workload.find(w => w.userId === this.user!.userId);
+      const me = this.data.workload.find((w) => w.userId === this.user!.userId);
       this.myTotalAssigned = me?.totalAssignedHours ?? 0;
       this.myCapacity = me?.weeklyCapacity ?? 0;
     }
@@ -124,62 +125,170 @@ export class HomePage implements OnInit, OnDestroy {
    * Detruit les graphiques precedents avant de creer les nouveaux.
    */
   private renderCharts(): void {
-    this.charts.forEach(c => c.destroy());
+    this.charts.forEach((c) => c.destroy());
     this.charts = [];
     if (!this.data) return;
 
     const d = this.data;
     // Palette de couleurs pour les graphiques
-    const palette      = ['#00687B', '#42b7d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+    const palette = ['#00687B', '#42b7d4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
     // Couleurs par statut de tache
     const statusColors = ['#90CAF9', '#4CAF50', '#9E9E9E', '#F44336'];
     // Donnees des statuts de taches
-    const statusData   = [d.tasksByStatus['NOT_STARTED']??0, d.tasksByStatus['IN_PROGRESS']??0, d.tasksByStatus['DONE']??0, d.tasksByStatus['BLOCKED']??0];
+    const statusData = [
+      d.tasksByStatus['NOT_STARTED'] ?? 0,
+      d.tasksByStatus['IN_PROGRESS'] ?? 0,
+      d.tasksByStatus['DONE'] ?? 0,
+      d.tasksByStatus['BLOCKED'] ?? 0,
+    ];
     // Labels des statuts
     const statusLabels = ['Not Started', 'In Progress', 'Done', 'Blocked'];
     // Cles des roles
-    const roleKeys     = Object.keys(d.usersByRole);
+    const roleKeys = Object.keys(d.usersByRole);
     // Projets actifs (limite a 12 pour la lisibilite)
-    const activeProjects = d.projectStats.filter(p => p.active).slice(0, 12);
+    const activeProjects = d.projectStats.filter((p) => p.active).slice(0, 12);
     // Fonction utilitaire pour tronquer les noms longs
-    const truncate = (s: string) => s.length > 22 ? s.substring(0, 22) + '...' : s;
+    const truncate = (s: string) => (s.length > 22 ? s.substring(0, 22) + '...' : s);
     // Labels de charge de travail (prenom + initiale nom)
     type WorkloadEntry = DashboardData['workload'][number];
-    const workloadLabels   = (wl: WorkloadEntry[]) => wl.map(w => `${w.firstName} ${w.lastName.charAt(0)}.`);
+    const workloadLabels = (wl: WorkloadEntry[]) =>
+      wl.map((w) => `${w.firstName} ${w.lastName.charAt(0)}.`);
     // Datasets de charge de travail (capacite vs assigne)
     const workloadDatasets = (wl: WorkloadEntry[]): ChartDataset[] => [
-      { label: 'Capacite (h/sem)', data: wl.map(w => w.weeklyCapacity), backgroundColor: 'rgba(0,104,123,0.25)', borderColor: '#00687B', borderWidth: 1 },
-      { label: 'Assigne (h)', data: wl.map(w => w.totalAssignedHours), backgroundColor: '#42b7d4' }
+      {
+        label: 'Capacite (h/sem)',
+        data: wl.map((w) => w.weeklyCapacity),
+        backgroundColor: 'rgba(0,104,123,0.25)',
+        borderColor: '#00687B',
+        borderWidth: 1,
+      },
+      {
+        label: 'Assigne (h)',
+        data: wl.map((w) => w.totalAssignedHours),
+        backgroundColor: '#42b7d4',
+      },
     ];
 
     // Graphiques adaptes au role
     switch (this.role) {
       case 'ADMIN':
-        this.mk('c-a-1', 'doughnut', statusLabels, [{ data: statusData, backgroundColor: statusColors }]);
-        this.mk('c-a-2', 'bar', roleKeys, [{ label: 'Users', data: roleKeys.map(r => d.usersByRole[r]), backgroundColor: palette }], 'y');
-        this.mk('c-a-3', 'bar', d.portfolioStats.map(p => p.name), [
-          { label: 'Projets', data: d.portfolioStats.map(p => p.projectCount), backgroundColor: '#00687B' },
-          { label: 'Progression %', data: d.portfolioStats.map(p => p.avgProgress), backgroundColor: '#42b7d4' }]);
-        this.mk('c-a-4', 'pie', ['Actifs', 'Inactifs'], [{ data: [d.totalActiveProjects, d.totalInactiveProjects], backgroundColor: ['#10b981', '#9E9E9E'] }]);
-        this.mk('c-a-5', 'bar', activeProjects.map(p => truncate(p.name)), [{ label: 'Progression %', data: activeProjects.map(p => p.progress), backgroundColor: '#42b7d4' }], 'y');
+        this.mk('c-a-1', 'doughnut', statusLabels, [
+          { data: statusData, backgroundColor: statusColors },
+        ]);
+        this.mk(
+          'c-a-2',
+          'bar',
+          roleKeys,
+          [
+            {
+              label: 'Users',
+              data: roleKeys.map((r) => d.usersByRole[r]),
+              backgroundColor: palette,
+            },
+          ],
+          'y',
+        );
+        this.mk(
+          'c-a-3',
+          'bar',
+          d.portfolioStats.map((p) => p.name),
+          [
+            {
+              label: 'Projets',
+              data: d.portfolioStats.map((p) => p.projectCount),
+              backgroundColor: '#00687B',
+            },
+            {
+              label: 'Progression %',
+              data: d.portfolioStats.map((p) => p.avgProgress),
+              backgroundColor: '#42b7d4',
+            },
+          ],
+        );
+        this.mk(
+          'c-a-4',
+          'pie',
+          ['Actifs', 'Inactifs'],
+          [
+            {
+              data: [d.totalActiveProjects, d.totalInactiveProjects],
+              backgroundColor: ['#10b981', '#9E9E9E'],
+            },
+          ],
+        );
+        this.mk(
+          'c-a-5',
+          'bar',
+          activeProjects.map((p) => truncate(p.name)),
+          [
+            {
+              label: 'Progression %',
+              data: activeProjects.map((p) => p.progress),
+              backgroundColor: '#42b7d4',
+            },
+          ],
+          'y',
+        );
         this.mk('c-a-6', 'bar', workloadLabels(d.workload), workloadDatasets(d.workload));
         break;
       case 'PMO':
-        this.mk('c-o-1', 'doughnut', statusLabels, [{ data: statusData, backgroundColor: statusColors }]);
-        this.mk('c-o-2', 'bar', d.portfolioStats.map(p => p.name), [
-          { label: 'Projets', data: d.portfolioStats.map(p => p.projectCount), backgroundColor: '#00687B' },
-          { label: 'Progression %', data: d.portfolioStats.map(p => p.avgProgress), backgroundColor: '#42b7d4' }]);
-        this.mk('c-o-3', 'bar', activeProjects.map(p => truncate(p.name)), [{ label: 'Progression %', data: activeProjects.map(p => p.progress), backgroundColor: '#42b7d4' }], 'y');
+        this.mk('c-o-1', 'doughnut', statusLabels, [
+          { data: statusData, backgroundColor: statusColors },
+        ]);
+        this.mk(
+          'c-o-2',
+          'bar',
+          d.portfolioStats.map((p) => p.name),
+          [
+            {
+              label: 'Projets',
+              data: d.portfolioStats.map((p) => p.projectCount),
+              backgroundColor: '#00687B',
+            },
+            {
+              label: 'Progression %',
+              data: d.portfolioStats.map((p) => p.avgProgress),
+              backgroundColor: '#42b7d4',
+            },
+          ],
+        );
+        this.mk(
+          'c-o-3',
+          'bar',
+          activeProjects.map((p) => truncate(p.name)),
+          [
+            {
+              label: 'Progression %',
+              data: activeProjects.map((p) => p.progress),
+              backgroundColor: '#42b7d4',
+            },
+          ],
+          'y',
+        );
         this.mk('c-o-4', 'bar', workloadLabels(d.workload), workloadDatasets(d.workload));
         break;
       case 'PM': {
-        this.mk('c-p-1', 'doughnut', statusLabels, [{ data: statusData, backgroundColor: statusColors }]);
-        const teamWorkload = d.workload.filter(w => ['DEV', 'QA', 'DEVOPS'].includes(w.role));
+        this.mk('c-p-1', 'doughnut', statusLabels, [
+          { data: statusData, backgroundColor: statusColors },
+        ]);
+        const teamWorkload = d.workload.filter((w) => ['DEV', 'QA', 'DEVOPS'].includes(w.role));
         this.mk('c-p-2', 'bar', workloadLabels(teamWorkload), workloadDatasets(teamWorkload));
         break;
       }
       case 'RH':
-        this.mk('c-r-1', 'bar', roleKeys, [{ label: 'Users', data: roleKeys.map(r => d.usersByRole[r]), backgroundColor: palette }], 'y');
+        this.mk(
+          'c-r-1',
+          'bar',
+          roleKeys,
+          [
+            {
+              label: 'Users',
+              data: roleKeys.map((r) => d.usersByRole[r]),
+              backgroundColor: palette,
+            },
+          ],
+          'y',
+        );
         this.mk('c-r-2', 'bar', workloadLabels(d.workload), workloadDatasets(d.workload));
         break;
     }
@@ -193,14 +302,35 @@ export class HomePage implements OnInit, OnDestroy {
    * @param datasets - Jeux de donnees
    * @param axis - Axe d'index ('y' pour barres horizontales)
    */
-  private mk(id: string, type: ChartType, labels: string[], datasets: ChartDataset[], axis?: string): void {
+  private mk(
+    id: string,
+    type: ChartType,
+    labels: string[],
+    datasets: ChartDataset[],
+    axis?: string,
+  ): void {
     const el = document.getElementById(id) as HTMLCanvasElement;
     if (!el) return;
-    const o: any = { responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom' as const, labels: { boxWidth: 12, font: { size: 11 } } } } };
+    const o: any = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom' as const, labels: { boxWidth: 12, font: { size: 11 } } },
+      },
+    };
     if (type === 'bar') {
-      if (axis === 'y') { o.indexAxis = 'y'; o.scales = { x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } }, y: { grid: { display: false } } }; }
-      else { o.scales = { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } } }; }
+      if (axis === 'y') {
+        o.indexAxis = 'y';
+        o.scales = {
+          x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+          y: { grid: { display: false } },
+        };
+      } else {
+        o.scales = {
+          x: { grid: { display: false } },
+          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
+        };
+      }
     }
     this.charts.push(new Chart(el, { type, data: { labels, datasets }, options: o }));
   }

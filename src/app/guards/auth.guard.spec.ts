@@ -21,12 +21,7 @@ describe('authGuard', () => {
 
   function setupTestBed() {
     TestBed.configureTestingModule({
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-        AuthService,
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), AuthService],
     });
     authService = TestBed.inject(AuthService);
     router = TestBed.inject(Router);

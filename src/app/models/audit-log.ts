@@ -14,12 +14,23 @@ export type AuditAction =
   | 'DEPENDENCY_REMOVE';
 
 export const AUDIT_ACTIONS: AuditAction[] = [
-  'CREATE', 'UPDATE', 'DELETE', 'STATUS_CHANGE',
-  'ASSIGN', 'UNASSIGN', 'DEPENDENCY_ADD', 'DEPENDENCY_REMOVE',
+  'CREATE',
+  'UPDATE',
+  'DELETE',
+  'STATUS_CHANGE',
+  'ASSIGN',
+  'UNASSIGN',
+  'DEPENDENCY_ADD',
+  'DEPENDENCY_REMOVE',
 ];
 
 export const AUDIT_ENTITY_TYPES: string[] = [
-  'PROJECT', 'TASK', 'USER', 'ASSIGNMENT', 'DEPENDENCY', 'PORTFOLIO',
+  'PROJECT',
+  'TASK',
+  'USER',
+  'ASSIGNMENT',
+  'DEPENDENCY',
+  'PORTFOLIO',
 ];
 
 export interface AuditLogDTO {
@@ -52,7 +63,7 @@ export interface PageResponse<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
-  number: number;   // page courante (0-based)
+  number: number; // page courante (0-based)
   size: number;
   first: boolean;
   last: boolean;

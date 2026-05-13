@@ -14,7 +14,7 @@
   background-color: rgba(66, 183, 212, 0.05);
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   margin-right: var(--space-md);
   transform: scale(1.2);
 }
@@ -33,7 +33,7 @@ select:hover {
   border-color: var(--color-accent);
 }
 
-input[type="password"] {
+input[type='password'] {
   font-family: 'Courier New', monospace;
   letter-spacing: 0.1em;
 }

@@ -14,7 +14,7 @@ export class CapacityService {
 
   getCapacityOverview(role?: string, projectId?: number): Observable<ResourceCapacityDTO[]> {
     let params = new HttpParams();
-    if (role)      params = params.set('role', role);
+    if (role) params = params.set('role', role);
     if (projectId) params = params.set('projectId', projectId.toString());
     return this.http.get<ResourceCapacityDTO[]>(this.baseUrl, { params });
   }
@@ -30,11 +30,17 @@ export class CapacityService {
    * Returns a week-by-week breakdown of the capacity impact of assigning
    * {@code assignedHours} to {@code userId} on {@code taskId}.
    */
-  checkAssignment(userId: number, taskId: number, assignedHours: number): Observable<AssignmentCapacityCheckDTO> {
+  checkAssignment(
+    userId: number,
+    taskId: number,
+    assignedHours: number,
+  ): Observable<AssignmentCapacityCheckDTO> {
     const params = new HttpParams()
       .set('userId', userId.toString())
       .set('taskId', taskId.toString())
       .set('assignedHours', assignedHours.toString());
-    return this.http.get<AssignmentCapacityCheckDTO>(`${this.baseUrl}/check-assignment`, { params });
+    return this.http.get<AssignmentCapacityCheckDTO>(`${this.baseUrl}/check-assignment`, {
+      params,
+    });
   }
 }

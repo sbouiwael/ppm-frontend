@@ -11,9 +11,20 @@
 import { TaskDTO } from '../../models/task';
 import { TaskDependencyDTO, DependencyType } from '../../models/task-dependency';
 import {
-  TimelineConfig, BarRect, ArrowPath, HeaderCell, TimescaleRow, GridLine,
-  ROW_HEIGHT, BAR_HEIGHT, BAR_Y_OFFSET, SUMMARY_HEIGHT, MILESTONE_SIZE,
-  ZoomLevel, ZOOM_CONFIGS, GanttTask,
+  TimelineConfig,
+  BarRect,
+  ArrowPath,
+  HeaderCell,
+  TimescaleRow,
+  GridLine,
+  ROW_HEIGHT,
+  BAR_HEIGHT,
+  BAR_Y_OFFSET,
+  SUMMARY_HEIGHT,
+  MILESTONE_SIZE,
+  ZoomLevel,
+  ZOOM_CONFIGS,
+  GanttTask,
 } from './gantt.models';
 
 // ── Fonctions utilitaires de date ──
@@ -112,10 +123,11 @@ export function buildTaskTree(flatTasks: TaskDTO[]): GanttTask[] {
     }
 
     // Milestone: 0-duration task with no children
-    node.isMilestone = !node.isSummary && (node.durationDays === 0 || (node.durationDays == null && !node.endDate));
+    node.isMilestone =
+      !node.isSummary && (node.durationDays === 0 || (node.durationDays == null && !node.endDate));
   }
 
-  roots.forEach(r => processNode(r, 0));
+  roots.forEach((r) => processNode(r, 0));
   return roots;
 }
 
@@ -147,14 +159,16 @@ export function buildPredecessorsLabel(
   deps: TaskDependencyDTO[],
   taskIdToRow: Map<number, number>,
 ): string {
-  const preds = deps.filter(d => d.successorTaskId === taskId);
+  const preds = deps.filter((d) => d.successorTaskId === taskId);
   if (preds.length === 0) return '';
-  return preds.map(d => {
-    const row = taskIdToRow.get(d.predecessorTaskId);
-    const rowLabel = row != null ? String(row + 1) : '?';
-    const type = d.type ?? 'FS';
-    return type === 'FS' ? rowLabel : `${rowLabel}${type}`;
-  }).join(', ');
+  return preds
+    .map((d) => {
+      const row = taskIdToRow.get(d.predecessorTaskId);
+      const rowLabel = row != null ? String(row + 1) : '?';
+      const type = d.type ?? 'FS';
+      return type === 'FS' ? rowLabel : `${rowLabel}${type}`;
+    })
+    .join(', ');
 }
 
 // ── Fonctions principales de calcul ──
@@ -196,10 +210,7 @@ export function computeTimelineRange(tasks: GanttTask[]): { startDate: Date; end
 }
 
 /** Construit la configuration complete de la timeline (dates, zoom, dimensions) */
-export function buildTimelineConfig(
-  tasks: GanttTask[],
-  zoom: ZoomLevel,
-): TimelineConfig {
+export function buildTimelineConfig(tasks: GanttTask[], zoom: ZoomLevel): TimelineConfig {
   const { startDate, endDate } = computeTimelineRange(tasks);
   const zoomCfg = ZOOM_CONFIGS[zoom];
   const totalDays = Math.ceil(daysBetween(startDate, endDate));
@@ -224,9 +235,7 @@ export function computeBar(
   if (!startStr) return null;
 
   const start = startOfDay(new Date(startStr));
-  const end = endStr
-    ? startOfDay(new Date(endStr))
-    : addDays(start, task.durationDays ?? 1);
+  const end = endStr ? startOfDay(new Date(endStr)) : addDays(start, task.durationDays ?? 1);
 
   const isMilestone = !!task.isMilestone;
   const x = dateToX(start, config);
@@ -234,9 +243,7 @@ export function computeBar(
   const width = isMilestone ? 0 : Math.max(rawWidth, config.pixelsPerDay);
 
   const barHeight = isSummary ? SUMMARY_HEIGHT : BAR_HEIGHT;
-  const yOffset = isSummary
-    ? ROW_HEIGHT / 2 - SUMMARY_HEIGHT / 2
-    : BAR_Y_OFFSET;
+  const yOffset = isSummary ? ROW_HEIGHT / 2 - SUMMARY_HEIGHT / 2 : BAR_Y_OFFSET;
   const y = rowIndex * ROW_HEIGHT + yOffset;
 
   const progress = task.progress ?? 0;
@@ -256,7 +263,9 @@ export function computeBar(
 
   return {
     taskId: task.id,
-    x, y, width,
+    x,
+    y,
+    width,
     height: barHeight,
     progressWidth,
     status: task.status ?? 'NOT_STARTED',
@@ -265,16 +274,14 @@ export function computeBar(
     isSummary,
     isMilestone,
     isCritical: !!task.isCritical,
-    hasBaseline, baselineX, baselineWidth,
+    hasBaseline,
+    baselineX,
+    baselineWidth,
   };
 }
 
 /** Calcule le chemin SVG d'une fleche de dependance entre deux barres */
-export function computeArrow(
-  predBar: BarRect,
-  succBar: BarRect,
-  type: DependencyType,
-): string {
+export function computeArrow(predBar: BarRect, succBar: BarRect, type: DependencyType): string {
   const midGap = 10;
   let fromX: number, fromY: number, toX: number, toY: number;
 
@@ -319,9 +326,10 @@ export function computeArrow(
       const midX = fromX + midGap;
       return `M ${fromX} ${fromY} H ${midX} V ${toY} H ${toX}`;
     } else {
-      const detourY = fromY < toY
-        ? Math.max(predBar.y + predBar.height + 6, succBar.y + succBar.height + 6)
-        : Math.min(predBar.y - 6, succBar.y - 6);
+      const detourY =
+        fromY < toY
+          ? Math.max(predBar.y + predBar.height + 6, succBar.y + succBar.height + 6)
+          : Math.min(predBar.y - 6, succBar.y - 6);
       return `M ${fromX} ${fromY} H ${fromX + midGap} V ${detourY} H ${toX - midGap} V ${toY} H ${toX}`;
     }
   } else {
@@ -339,8 +347,18 @@ export function computeArrow(
 
 /** Noms des mois en anglais */
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
 
 /** Genere l'echelle de temps avec en-tetes superieur et inferieur selon le zoom */
@@ -363,7 +381,12 @@ export function generateTimescale(config: TimelineConfig): TimescaleRow {
     let day = new Date(startDate);
     while (day < endDate) {
       const x = dateToX(day, config);
-      bottom.push({ label: String(day.getDate()), x, width: pixelsPerDay, isWeekend: isWeekend(day) });
+      bottom.push({
+        label: String(day.getDate()),
+        x,
+        width: pixelsPerDay,
+        isWeekend: isWeekend(day),
+      });
       day = addDays(day, 1);
     }
   } else if (zoom === 'week') {
@@ -452,8 +475,10 @@ export function getWeekendRanges(config: TimelineConfig): { x: number; width: nu
 interface CpNode {
   id: number;
   duration: number;
-  es: number; ef: number;
-  ls: number; lf: number;
+  es: number;
+  ef: number;
+  ls: number;
+  lf: number;
   successors: { id: number; type: DependencyType }[];
   predecessors: { id: number; type: DependencyType }[];
 }
@@ -465,10 +490,7 @@ interface CpNode {
  * - Passe arriere
  * - Les taches critiques ont une marge (float) nulle
  */
-export function computeCriticalPath(
-  tasks: GanttTask[],
-  deps: TaskDependencyDTO[],
-): Set<number> {
+export function computeCriticalPath(tasks: GanttTask[], deps: TaskDependencyDTO[]): Set<number> {
   const criticalIds = new Set<number>();
   const nodeMap = new Map<number, CpNode>();
 
@@ -478,7 +500,10 @@ export function computeCriticalPath(
       nodeMap.set(t.id, {
         id: t.id,
         duration: t.durationDays ?? 1,
-        es: 0, ef: 0, ls: 0, lf: 0,
+        es: 0,
+        ef: 0,
+        ls: 0,
+        lf: 0,
         successors: [],
         predecessors: [],
       });
@@ -500,11 +525,14 @@ export function computeCriticalPath(
 
   // Forward pass (topological order via Kahn's algorithm)
   const inDegree = new Map<number, number>();
-  nodes.forEach(n => inDegree.set(n.id, n.predecessors.length));
-  const queue: CpNode[] = nodes.filter(n => n.predecessors.length === 0);
+  nodes.forEach((n) => inDegree.set(n.id, n.predecessors.length));
+  const queue: CpNode[] = nodes.filter((n) => n.predecessors.length === 0);
 
   // Set ES for start nodes
-  queue.forEach(n => { n.es = 0; n.ef = n.duration; });
+  queue.forEach((n) => {
+    n.es = 0;
+    n.ef = n.duration;
+  });
 
   const order: CpNode[] = [];
   while (queue.length > 0) {
@@ -513,10 +541,14 @@ export function computeCriticalPath(
     for (const s of curr.successors) {
       const succ = nodeMap.get(s.id)!;
       // FS: ES(succ) = max(ES(succ), EF(pred))
-      const newEs = s.type === 'FS' ? curr.ef
-                  : s.type === 'SS' ? curr.es
-                  : s.type === 'FF' ? curr.ef - succ.duration
-                  : /* SF */ curr.es - succ.duration;
+      const newEs =
+        s.type === 'FS'
+          ? curr.ef
+          : s.type === 'SS'
+            ? curr.es
+            : s.type === 'FF'
+              ? curr.ef - succ.duration
+              : /* SF */ curr.es - succ.duration;
       if (newEs > succ.es) {
         succ.es = newEs;
         succ.ef = succ.es + succ.duration;
@@ -528,9 +560,9 @@ export function computeCriticalPath(
   }
 
   // Backward pass
-  const projectEnd = Math.max(...nodes.map(n => n.ef), 0);
+  const projectEnd = Math.max(...nodes.map((n) => n.ef), 0);
   // Set LF for end nodes (no successors)
-  nodes.forEach(n => {
+  nodes.forEach((n) => {
     if (n.successors.length === 0) {
       n.lf = projectEnd;
       n.ls = n.lf - n.duration;
@@ -544,10 +576,14 @@ export function computeCriticalPath(
     const curr = order[i];
     for (const s of curr.successors) {
       const succ = nodeMap.get(s.id)!;
-      const newLf = s.type === 'FS' ? succ.ls
-                  : s.type === 'SS' ? succ.ls + curr.duration
-                  : s.type === 'FF' ? succ.lf
-                  : /* SF */ succ.lf + curr.duration;
+      const newLf =
+        s.type === 'FS'
+          ? succ.ls
+          : s.type === 'SS'
+            ? succ.ls + curr.duration
+            : s.type === 'FF'
+              ? succ.lf
+              : /* SF */ succ.lf + curr.duration;
       if (newLf < curr.lf) {
         curr.lf = newLf;
         curr.ls = curr.lf - curr.duration;
@@ -572,11 +608,16 @@ export function computeCriticalPath(
 export function getStatusColor(status: string, isCritical: boolean): string {
   if (isCritical) return '#E53935'; // red for critical path
   switch (status) {
-    case 'NOT_STARTED': return '#90CAF9';
-    case 'IN_PROGRESS': return '#4CAF50';
-    case 'DONE':        return '#9E9E9E';
-    case 'BLOCKED':     return '#F44336';
-    default:            return '#90CAF9';
+    case 'NOT_STARTED':
+      return '#90CAF9';
+    case 'IN_PROGRESS':
+      return '#4CAF50';
+    case 'DONE':
+      return '#9E9E9E';
+    case 'BLOCKED':
+      return '#F44336';
+    default:
+      return '#90CAF9';
   }
 }
 
@@ -584,11 +625,16 @@ export function getStatusColor(status: string, isCritical: boolean): string {
 export function getProgressColor(status: string, isCritical: boolean): string {
   if (isCritical) return '#B71C1C';
   switch (status) {
-    case 'NOT_STARTED': return '#64B5F6';
-    case 'IN_PROGRESS': return '#388E3C';
-    case 'DONE':        return '#757575';
-    case 'BLOCKED':     return '#D32F2F';
-    default:            return '#64B5F6';
+    case 'NOT_STARTED':
+      return '#64B5F6';
+    case 'IN_PROGRESS':
+      return '#388E3C';
+    case 'DONE':
+      return '#757575';
+    case 'BLOCKED':
+      return '#D32F2F';
+    default:
+      return '#64B5F6';
   }
 }
 
@@ -605,7 +651,9 @@ export function milestonePath(cx: number, cy: number, size: number = MILESTONE_S
 /** Genere le chemin SVG d'une barre recapitulative avec des crochets aux extremites */
 export function summaryBarPath(x: number, y: number, width: number, height: number): string {
   const tick = 5;
-  return `M ${x} ${y + tick} V ${y} H ${x + width} V ${y + tick} `
-       + `M ${x} ${y} V ${y + height} `
-       + `M ${x + width} ${y} V ${y + height}`;
+  return (
+    `M ${x} ${y + tick} V ${y} H ${x + width} V ${y + tick} ` +
+    `M ${x} ${y} V ${y + height} ` +
+    `M ${x + width} ${y} V ${y + height}`
+  );
 }

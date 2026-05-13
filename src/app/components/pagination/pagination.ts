@@ -61,11 +61,19 @@ export class Pagination {
   }
 
   /** Navigue vers la premiere page */
-  goFirst(): void { this.goToPage(1); }
+  goFirst(): void {
+    this.goToPage(1);
+  }
   /** Navigue vers la page precedente */
-  goPrev(): void { this.goToPage(this.currentPage - 1); }
+  goPrev(): void {
+    this.goToPage(this.currentPage - 1);
+  }
   /** Navigue vers la page suivante */
-  goNext(): void { this.goToPage(this.currentPage + 1); }
+  goNext(): void {
+    this.goToPage(this.currentPage + 1);
+  }
   /** Navigue vers la derniere page */
-  goLast(): void { this.goToPage(this.totalPages); }
+  goLast(): void {
+    this.goToPage(this.totalPages);
+  }
 }

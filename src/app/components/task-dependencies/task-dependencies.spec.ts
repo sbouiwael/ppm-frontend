@@ -4,7 +4,6 @@ import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { describe, it, expect, beforeEach } from 'vitest';
 
-
 import { TaskDependencies } from './task-dependencies';
 
 describe('TaskDependencies', () => {
@@ -14,11 +13,7 @@ describe('TaskDependencies', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TaskDependencies],
-      providers: [
-        provideHttpClient(),
-        provideHttpClientTesting(),
-        provideRouter([]),
-      ],
+      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TaskDependencies);

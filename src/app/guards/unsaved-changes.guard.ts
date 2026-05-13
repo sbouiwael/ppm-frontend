@@ -54,6 +54,6 @@ export const unsavedChangesGuard: CanDeactivateFn<HasUnsavedChanges> = (componen
 
   // Avertissement clair — l'utilisateur peut choisir de rester ou de partir
   return window.confirm(
-    'You have unsaved changes.\n\nIf you leave this page, your changes will be lost.\n\nContinue?'
+    'You have unsaved changes.\n\nIf you leave this page, your changes will be lost.\n\nContinue?',
   );
 };

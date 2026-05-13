@@ -1,134 +1,239 @@
 @if (!loading && data) {
-<div class="home-page">
-  <section class="hero">
-    <div class="hero-content">
-      <h1 class="hero-title">Bienvenue, {{ user?.firstName }} {{ user?.lastName }}</h1>
-      <p class="hero-subtitle">
-        @if (role === 'ADMIN') { Administrateur — Acces complet a la plateforme PPM }
-        @else if (role === 'PMO') { PMO — Supervision des portefeuilles et planification transversale }
-        @else if (role === 'PM') { Chef de projet — Gestion operationnelle de vos projets }
-        @else if (role === 'DEV') { Developpeur — Suivi et mise a jour de vos taches }
-        @else if (role === 'QA') { Testeur QA — Suivi et validation de vos taches }
-        @else if (role === 'DEVOPS') { DevOps — Suivi de vos taches infrastructure }
-        @else if (role === 'RH') { Ressources Humaines — Gestion des utilisateurs }
-      </p>
-      <span class="hero-role-badge">{{ role }}</span>
-    </div>
-  </section>
+  <div class="home-page">
+    <section class="hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Bienvenue, {{ user?.firstName }} {{ user?.lastName }}</h1>
+        <p class="hero-subtitle">
+          @if (role === 'ADMIN') {
+            Administrateur — Acces complet a la plateforme PPM
+          } @else if (role === 'PMO') {
+            PMO — Supervision des portefeuilles et planification transversale
+          } @else if (role === 'PM') {
+            Chef de projet — Gestion operationnelle de vos projets
+          } @else if (role === 'DEV') {
+            Developpeur — Suivi et mise a jour de vos taches
+          } @else if (role === 'QA') {
+            Testeur QA — Suivi et validation de vos taches
+          } @else if (role === 'DEVOPS') {
+            DevOps — Suivi de vos taches infrastructure
+          } @else if (role === 'RH') {
+            Ressources Humaines — Gestion des utilisateurs
+          }
+        </p>
+        <span class="hero-role-badge">{{ role }}</span>
+      </div>
+    </section>
 
-  <!-- KPI Stats -->
-  <section class="stats-row">
-    @if (hasRole('ADMIN','PMO','PM','RH')) { <div class="stat-card"><span class="stat-value">{{ data.totalPortfolios }}</span><span class="stat-label">Portefeuilles</span></div> }
-    <div class="stat-card"><span class="stat-value">{{ data.totalProjects }}</span><span class="stat-label">Projets</span></div>
-    <div class="stat-card"><span class="stat-value">{{ data.totalTasks }}</span><span class="stat-label">Taches</span></div>
-    @if (hasRole('ADMIN','RH','PMO','PM')) { <div class="stat-card"><span class="stat-value">{{ data.totalActiveUsers }}</span><span class="stat-label">Utilisateurs actifs</span></div> }
-    @if (role === 'PM') { <div class="stat-card stat-card-accent"><span class="stat-value">{{ myProjects.length }}</span><span class="stat-label">Mes projets</span></div> }
-    @if (hasRole('DEV','QA','DEVOPS')) { <div class="stat-card stat-card-accent"><span class="stat-value">{{ myTotalAssigned }}h</span><span class="stat-label">Mes heures</span></div> }
-  </section>
-
-  <!-- ═══════ ADMIN ═══════ -->
-  @if (role === 'ADMIN') {
-  <section class="charts-section">
-    <h2 class="section-heading">Vue globale du systeme</h2>
-    <div class="charts-grid">
-      <div class="chart-card"><h4>Taches par statut</h4><div class="chart-container"><canvas id="c-a-1"></canvas></div></div>
-      <div class="chart-card"><h4>Utilisateurs par role</h4><div class="chart-container"><canvas id="c-a-2"></canvas></div></div>
-      <div class="chart-card"><h4>Projets par portefeuille</h4><div class="chart-container"><canvas id="c-a-3"></canvas></div></div>
-      <div class="chart-card"><h4>Projets actifs vs inactifs</h4><div class="chart-container"><canvas id="c-a-4"></canvas></div></div>
-      <div class="chart-card chart-card-wide"><h4>Progression par projet</h4><div class="chart-container chart-container-tall"><canvas id="c-a-5"></canvas></div></div>
-      <div class="chart-card chart-card-wide"><h4>Charge vs Capacite par ressource</h4><div class="chart-container chart-container-tall"><canvas id="c-a-6"></canvas></div></div>
-    </div>
-    <div class="kpi-row">
-      <div class="kpi-box"><span class="kpi-val">{{ totalCapacity }}h</span><span class="kpi-lbl">Capacite totale / semaine</span></div>
-      <div class="kpi-box"><span class="kpi-val">{{ totalAssigned }}h</span><span class="kpi-lbl">Heures assignees</span></div>
-    </div>
-    <div class="nav-links-row">
-      <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles</a>
-      <a routerLink="/projects" class="nav-chip">Projets</a>
-      <a routerLink="/tasks" class="nav-chip">Taches</a>
-      <a routerLink="/users" class="nav-chip">Utilisateurs</a>
-    </div>
-  </section>
-  }
-
-  <!-- ═══════ PMO ═══════ -->
-  @if (role === 'PMO') {
-  <section class="charts-section">
-    <h2 class="section-heading">Gouvernance portefeuille</h2>
-    <div class="charts-grid">
-      <div class="chart-card"><h4>Taches par statut</h4><div class="chart-container"><canvas id="c-o-1"></canvas></div></div>
-      <div class="chart-card"><h4>Projets par portefeuille</h4><div class="chart-container"><canvas id="c-o-2"></canvas></div></div>
-      <div class="chart-card chart-card-wide"><h4>Progression par projet</h4><div class="chart-container chart-container-tall"><canvas id="c-o-3"></canvas></div></div>
-      <div class="chart-card chart-card-wide"><h4>Charge vs Capacite</h4><div class="chart-container chart-container-tall"><canvas id="c-o-4"></canvas></div></div>
-    </div>
-    <div class="nav-links-row">
-      <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles</a>
-      <a routerLink="/projects" class="nav-chip">Projets</a>
-      <a routerLink="/tasks" class="nav-chip">Taches</a>
-    </div>
-  </section>
-  }
-
-  <!-- ═══════ PM ═══════ -->
-  @if (role === 'PM') {
-  <section>
-    <h2 class="section-heading">Mes Projets</h2>
-    <div class="pm-projects-grid">
-      @for (p of myProjects; track p.id) {
-        <a [routerLink]="['/projects', p.id]" class="pm-project-card">
-          <h4>{{ p.name }}</h4>
-          <div class="pm-progress"><div class="pm-progress-bar"><div class="pm-progress-fill" [style.width.%]="p.progress ?? 0"></div></div><span class="pm-progress-text">{{ p.progress ?? 0 }}%</span></div>
-          <p class="card-desc">{{ p.startDate }} — {{ p.endDate ?? 'En cours' }}</p>
-          <small class="card-desc">{{ p.taskCount }} taches</small>
-        </a>
+    <!-- KPI Stats -->
+    <section class="stats-row">
+      @if (hasRole('ADMIN', 'PMO', 'PM', 'RH')) {
+        <div class="stat-card">
+          <span class="stat-value">{{ data.totalPortfolios }}</span
+          ><span class="stat-label">Portefeuilles</span>
+        </div>
       }
-    </div>
-    <div class="charts-grid">
-      <div class="chart-card"><h4>Taches par statut</h4><div class="chart-container"><canvas id="c-p-1"></canvas></div></div>
-      <div class="chart-card"><h4>Charge equipe</h4><div class="chart-container"><canvas id="c-p-2"></canvas></div></div>
-    </div>
-    <div class="nav-links-row">
-      <a routerLink="/projects" class="nav-chip">Tous les projets</a>
-      <a routerLink="/tasks" class="nav-chip">Taches</a>
-    </div>
-  </section>
-  }
+      <div class="stat-card">
+        <span class="stat-value">{{ data.totalProjects }}</span
+        ><span class="stat-label">Projets</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-value">{{ data.totalTasks }}</span
+        ><span class="stat-label">Taches</span>
+      </div>
+      @if (hasRole('ADMIN', 'RH', 'PMO', 'PM')) {
+        <div class="stat-card">
+          <span class="stat-value">{{ data.totalActiveUsers }}</span
+          ><span class="stat-label">Utilisateurs actifs</span>
+        </div>
+      }
+      @if (role === 'PM') {
+        <div class="stat-card stat-card-accent">
+          <span class="stat-value">{{ myProjects.length }}</span
+          ><span class="stat-label">Mes projets</span>
+        </div>
+      }
+      @if (hasRole('DEV', 'QA', 'DEVOPS')) {
+        <div class="stat-card stat-card-accent">
+          <span class="stat-value">{{ myTotalAssigned }}h</span
+          ><span class="stat-label">Mes heures</span>
+        </div>
+      }
+    </section>
 
-  <!-- ═══════ DEV / QA / DEVOPS ═══════ -->
-  @if (hasRole('DEV','QA','DEVOPS')) {
-  <section>
-    <h2 class="section-heading">Mon espace de travail</h2>
-    <div class="kpi-row">
-      <div class="kpi-box"><span class="kpi-val">{{ myTotalAssigned }}h</span><span class="kpi-lbl">Heures assignees</span></div>
-      <div class="kpi-box"><span class="kpi-val">{{ myCapacity }}h/sem</span><span class="kpi-lbl">Ma capacite</span></div>
-      <div class="kpi-box"><span class="kpi-val">{{ data.totalProjects }}</span><span class="kpi-lbl">Projets en cours</span></div>
-    </div>
-    <div class="nav-links-row">
-      <a routerLink="/tasks" class="nav-chip nav-chip-primary">Mes Taches</a>
-      <a routerLink="/projects" class="nav-chip">Projets (lecture)</a>
-    </div>
-  </section>
-  }
+    <!-- ═══════ ADMIN ═══════ -->
+    @if (role === 'ADMIN') {
+      <section class="charts-section">
+        <h2 class="section-heading">Vue globale du systeme</h2>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Taches par statut</h4>
+            <div class="chart-container"><canvas id="c-a-1"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h4>Utilisateurs par role</h4>
+            <div class="chart-container"><canvas id="c-a-2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h4>Projets par portefeuille</h4>
+            <div class="chart-container"><canvas id="c-a-3"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h4>Projets actifs vs inactifs</h4>
+            <div class="chart-container"><canvas id="c-a-4"></canvas></div>
+          </div>
+          <div class="chart-card chart-card-wide">
+            <h4>Progression par projet</h4>
+            <div class="chart-container chart-container-tall"><canvas id="c-a-5"></canvas></div>
+          </div>
+          <div class="chart-card chart-card-wide">
+            <h4>Charge vs Capacite par ressource</h4>
+            <div class="chart-container chart-container-tall"><canvas id="c-a-6"></canvas></div>
+          </div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-box">
+            <span class="kpi-val">{{ totalCapacity }}h</span
+            ><span class="kpi-lbl">Capacite totale / semaine</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-val">{{ totalAssigned }}h</span
+            ><span class="kpi-lbl">Heures assignees</span>
+          </div>
+        </div>
+        <div class="nav-links-row">
+          <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles</a>
+          <a routerLink="/projects" class="nav-chip">Projets</a>
+          <a routerLink="/tasks" class="nav-chip">Taches</a>
+          <a routerLink="/users" class="nav-chip">Utilisateurs</a>
+        </div>
+      </section>
+    }
 
-  <!-- ═══════ RH ═══════ -->
-  @if (role === 'RH') {
-  <section>
-    <h2 class="section-heading">Ressources Humaines</h2>
-    <div class="charts-grid">
-      <div class="chart-card"><h4>Utilisateurs par role</h4><div class="chart-container"><canvas id="c-r-1"></canvas></div></div>
-      <div class="chart-card chart-card-wide"><h4>Capacite vs Charge par utilisateur</h4><div class="chart-container chart-container-tall"><canvas id="c-r-2"></canvas></div></div>
-    </div>
-    <div class="kpi-row">
-      <div class="kpi-box"><span class="kpi-val">{{ data.totalUsers }}</span><span class="kpi-lbl">Total utilisateurs</span></div>
-      <div class="kpi-box"><span class="kpi-val">{{ data.totalActiveUsers }}</span><span class="kpi-lbl">Actifs</span></div>
-      <div class="kpi-box"><span class="kpi-val">{{ data.totalUsers - data.totalActiveUsers }}</span><span class="kpi-lbl">Inactifs</span></div>
-    </div>
-    <div class="nav-links-row">
-      <a routerLink="/users" class="nav-chip nav-chip-primary">Gerer utilisateurs</a>
-      <a routerLink="/projects" class="nav-chip">Projets (lecture)</a>
-      <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles (lecture)</a>
-    </div>
-  </section>
-  }
-</div>
+    <!-- ═══════ PMO ═══════ -->
+    @if (role === 'PMO') {
+      <section class="charts-section">
+        <h2 class="section-heading">Gouvernance portefeuille</h2>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Taches par statut</h4>
+            <div class="chart-container"><canvas id="c-o-1"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h4>Projets par portefeuille</h4>
+            <div class="chart-container"><canvas id="c-o-2"></canvas></div>
+          </div>
+          <div class="chart-card chart-card-wide">
+            <h4>Progression par projet</h4>
+            <div class="chart-container chart-container-tall"><canvas id="c-o-3"></canvas></div>
+          </div>
+          <div class="chart-card chart-card-wide">
+            <h4>Charge vs Capacite</h4>
+            <div class="chart-container chart-container-tall"><canvas id="c-o-4"></canvas></div>
+          </div>
+        </div>
+        <div class="nav-links-row">
+          <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles</a>
+          <a routerLink="/projects" class="nav-chip">Projets</a>
+          <a routerLink="/tasks" class="nav-chip">Taches</a>
+        </div>
+      </section>
+    }
+
+    <!-- ═══════ PM ═══════ -->
+    @if (role === 'PM') {
+      <section>
+        <h2 class="section-heading">Mes Projets</h2>
+        <div class="pm-projects-grid">
+          @for (p of myProjects; track p.id) {
+            <a [routerLink]="['/projects', p.id]" class="pm-project-card">
+              <h4>{{ p.name }}</h4>
+              <div class="pm-progress">
+                <div class="pm-progress-bar">
+                  <div class="pm-progress-fill" [style.width.%]="p.progress ?? 0"></div>
+                </div>
+                <span class="pm-progress-text">{{ p.progress ?? 0 }}%</span>
+              </div>
+              <p class="card-desc">{{ p.startDate }} — {{ p.endDate ?? 'En cours' }}</p>
+              <small class="card-desc">{{ p.taskCount }} taches</small>
+            </a>
+          }
+        </div>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Taches par statut</h4>
+            <div class="chart-container"><canvas id="c-p-1"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <h4>Charge equipe</h4>
+            <div class="chart-container"><canvas id="c-p-2"></canvas></div>
+          </div>
+        </div>
+        <div class="nav-links-row">
+          <a routerLink="/projects" class="nav-chip">Tous les projets</a>
+          <a routerLink="/tasks" class="nav-chip">Taches</a>
+        </div>
+      </section>
+    }
+
+    <!-- ═══════ DEV / QA / DEVOPS ═══════ -->
+    @if (hasRole('DEV', 'QA', 'DEVOPS')) {
+      <section>
+        <h2 class="section-heading">Mon espace de travail</h2>
+        <div class="kpi-row">
+          <div class="kpi-box">
+            <span class="kpi-val">{{ myTotalAssigned }}h</span
+            ><span class="kpi-lbl">Heures assignees</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-val">{{ myCapacity }}h/sem</span
+            ><span class="kpi-lbl">Ma capacite</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-val">{{ data.totalProjects }}</span
+            ><span class="kpi-lbl">Projets en cours</span>
+          </div>
+        </div>
+        <div class="nav-links-row">
+          <a routerLink="/tasks" class="nav-chip nav-chip-primary">Mes Taches</a>
+          <a routerLink="/projects" class="nav-chip">Projets (lecture)</a>
+        </div>
+      </section>
+    }
+
+    <!-- ═══════ RH ═══════ -->
+    @if (role === 'RH') {
+      <section>
+        <h2 class="section-heading">Ressources Humaines</h2>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h4>Utilisateurs par role</h4>
+            <div class="chart-container"><canvas id="c-r-1"></canvas></div>
+          </div>
+          <div class="chart-card chart-card-wide">
+            <h4>Capacite vs Charge par utilisateur</h4>
+            <div class="chart-container chart-container-tall"><canvas id="c-r-2"></canvas></div>
+          </div>
+        </div>
+        <div class="kpi-row">
+          <div class="kpi-box">
+            <span class="kpi-val">{{ data.totalUsers }}</span
+            ><span class="kpi-lbl">Total utilisateurs</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-val">{{ data.totalActiveUsers }}</span
+            ><span class="kpi-lbl">Actifs</span>
+          </div>
+          <div class="kpi-box">
+            <span class="kpi-val">{{ data.totalUsers - data.totalActiveUsers }}</span
+            ><span class="kpi-lbl">Inactifs</span>
+          </div>
+        </div>
+        <div class="nav-links-row">
+          <a routerLink="/users" class="nav-chip nav-chip-primary">Gerer utilisateurs</a>
+          <a routerLink="/projects" class="nav-chip">Projets (lecture)</a>
+          <a routerLink="/portefeuilles" class="nav-chip">Portefeuilles (lecture)</a>
+        </div>
+      </section>
+    }
+  </div>
 }

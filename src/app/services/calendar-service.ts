@@ -59,7 +59,7 @@ export class CalendarService {
   /** Recupere les jours non travailles d'un calendrier sur une periode donnee */
   getNonWorkingDays(calendarId: number, from: string, to: string): Observable<string[]> {
     return this.http.get<string[]>(`${this.baseUrl}/${calendarId}/non-working-days`, {
-      params: { from, to }
+      params: { from, to },
     });
   }
 }

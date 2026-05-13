@@ -20,13 +20,13 @@ export class AuditService {
    */
   search(params: AuditSearchParams): Observable<PageResponse<AuditLogDTO>> {
     let p = new HttpParams();
-    if (params.entityType)            p = p.set('entityType', params.entityType);
-    if (params.actorId != null)       p = p.set('actorId',    params.actorId.toString());
-    if (params.action)                p = p.set('action',     params.action);
-    if (params.from)                  p = p.set('from',       params.from + 'T00:00:00');
-    if (params.to)                    p = p.set('to',         params.to   + 'T23:59:59');
-    if (params.page != null)          p = p.set('page',       params.page.toString());
-    if (params.size != null)          p = p.set('size',       params.size.toString());
+    if (params.entityType) p = p.set('entityType', params.entityType);
+    if (params.actorId != null) p = p.set('actorId', params.actorId.toString());
+    if (params.action) p = p.set('action', params.action);
+    if (params.from) p = p.set('from', params.from + 'T00:00:00');
+    if (params.to) p = p.set('to', params.to + 'T23:59:59');
+    if (params.page != null) p = p.set('page', params.page.toString());
+    if (params.size != null) p = p.set('size', params.size.toString());
     return this.http.get<PageResponse<AuditLogDTO>>(this.baseUrl, { params: p });
   }
 

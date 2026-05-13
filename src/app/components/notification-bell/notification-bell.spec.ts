@@ -31,7 +31,7 @@ describe('NotificationBell', () => {
       providers: [
         provideRouter([]),
         { provide: NotificationService, useValue: mockNotifService },
-        { provide: AuthService,         useValue: mockAuthService },
+        { provide: AuthService, useValue: mockAuthService },
       ],
     }).compileComponents();
 

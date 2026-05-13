@@ -56,11 +56,11 @@
 }
 
 .milestone-diamond {
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .summary-bar {
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
 }
 
 .resize-handle {
@@ -78,7 +78,7 @@
   pointer-events: none;
   z-index: 100;
   min-width: 160px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
 }
 
@@ -86,7 +86,7 @@
   font-weight: 700;
   font-size: 13px;
   margin-bottom: 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   padding-bottom: 4px;
 }
 
@@ -101,14 +101,22 @@
   color: #90a4ae;
 }
 
-.tooltip-status[data-status="NOT_STARTED"] { color: #90CAF9; }
-.tooltip-status[data-status="IN_PROGRESS"] { color: #81C784; }
-.tooltip-status[data-status="DONE"]        { color: #BDBDBD; }
-.tooltip-status[data-status="BLOCKED"]     { color: #EF9A9A; }
+.tooltip-status[data-status='NOT_STARTED'] {
+  color: #90caf9;
+}
+.tooltip-status[data-status='IN_PROGRESS'] {
+  color: #81c784;
+}
+.tooltip-status[data-status='DONE'] {
+  color: #bdbdbd;
+}
+.tooltip-status[data-status='BLOCKED'] {
+  color: #ef9a9a;
+}
 
 .tooltip-critical {
   margin-top: 4px;
-  color: #EF5350;
+  color: #ef5350;
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;
